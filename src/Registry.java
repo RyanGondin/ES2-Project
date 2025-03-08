@@ -1,37 +1,29 @@
+import java.util.HashMap;
 
 public class Registry {
 
     private static Registry instance;
-    private String path;
+    private HashMap<String, String> configuration = new HashMap<String, String>();
     private String connectionString;
 
     private Registry(){
 
     }
 
-    public static synchronized Registry getInstance(){
+    public static Registry getInstance(){
 
         if (instance == null){
             instance = new Registry();
         }
         return instance;
 
-
     }
 
-    public String getPath(){
-        return path;
+    public String getConnectionString(String key){
+        return this.configuration.get(key);
     }
 
-    public void setPath(String path){
-        this.path = path;
-    }
-
-    public String getConnectionString(){
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString){
-        this.connectionString = connectionString;
+    public void setConnectionString(String key, String value){
+        this.configuration.put(key, value);
     }
 }
