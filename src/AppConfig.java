@@ -1,19 +1,19 @@
 import java.util.HashMap;
 
-public class Registry {
+public class AppConfig {
 
-    private static Registry instance;
+    private static AppConfig instance;
     private HashMap<String, String> configuration = new HashMap<String, String>();
     private String connectionString;
 
-    private Registry(){
+    private AppConfig(){
 
     }
 
-    public static Registry getInstance(){
+    public static AppConfig getInstance(){
 
         if (instance == null){
-            instance = new Registry();
+            instance = new AppConfig();
         }
         return instance;
 
