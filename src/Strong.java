@@ -1,11 +1,15 @@
+import Interfaces.PasswordType;
 import Interfaces.Passwords;
 
 public class Strong implements Passwords {
     private String password;
-    private String type;
+    private PasswordType type;
 
+    /**
+     * Constructor to initialize.
+     */
     protected Strong() {
-        this.type = "Strong";
+        this.type = PasswordType.STRONG;
     }
 
     @Override
@@ -19,7 +23,7 @@ public class Strong implements Passwords {
     }
 
     @Override
-    public String getType() {
+    public PasswordType getType() {
         return this.type;
     }
 

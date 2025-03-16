@@ -1,5 +1,6 @@
 import Interfaces.Passwords;
 import Exceptions.UndefinedPasswordException;
+import Interfaces.PasswordType;
 
 public class Main {
     public static void main(String[] args) {

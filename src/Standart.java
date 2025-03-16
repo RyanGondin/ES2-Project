@@ -1,11 +1,15 @@
+import Interfaces.PasswordType;
 import Interfaces.Passwords;
 
 public class Standart implements Passwords {
     private String password;
-    private String type;
+    private PasswordType type;
 
+    /**
+     * Constructor to initialize.
+     */
     protected Standart() {
-        this.type = "Standart";
+        this.type = PasswordType.STANDART;
     }
 
     @Override
@@ -19,7 +23,7 @@ public class Standart implements Passwords {
     }
 
     @Override
-    public String getType() {
+    public PasswordType getType() {
         return this.type;
     }
 
