@@ -4,8 +4,8 @@ public class Strong implements Passwords {
     private String password;
     private String type;
 
-    protected Strong(){
-
+    protected Strong() {
+        this.type = "Strong";
     }
 
     @Override
@@ -20,10 +20,10 @@ public class Strong implements Passwords {
 
     @Override
     public String getType() {
-        return ("Standart");
+        return this.type;
     }
 
-    public void show(){
-        System.out.println("Password: " );
+    public void show() {
+        System.out.println("Password: " + this.password);
     }
 }

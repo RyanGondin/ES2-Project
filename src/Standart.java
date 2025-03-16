@@ -4,8 +4,8 @@ public class Standart implements Passwords {
     private String password;
     private String type;
 
-    protected Standart(){
-
+    protected Standart() {
+        this.type = "Standart";
     }
 
     @Override
@@ -20,10 +20,11 @@ public class Standart implements Passwords {
 
     @Override
     public String getType() {
-        return ("Standart");
+        return this.type;
     }
 
-    public void show(){
-        System.out.println("Password: " );
+    @Override
+    public void show() {
+        System.out.println("Password: " + this.password);
     }
 }

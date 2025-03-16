@@ -1,29 +1,23 @@
 import java.util.HashMap;
 
 public class AppConfig {
+    // Eager initialization
+    private static final AppConfig instance = new AppConfig();
+    private HashMap<String, String> configuration = new HashMap<>();
 
-    private static AppConfig instance;
-    private HashMap<String, String> configuration = new HashMap<String, String>();
-    private String connectionString;
+    // Private constructor to prevent instantiation
+    private AppConfig() {}
 
-    private AppConfig(){
-
-    }
-
-    public static AppConfig getInstance(){
-
-        if (instance == null){
-            instance = new AppConfig();
-        }
+    // Public method to provide access to the instance
+    public static AppConfig getInstance() {
         return instance;
-
     }
 
-    public String getConnectionString(String key){
+    public String getConnectionString(String key) {
         return this.configuration.get(key);
     }
 
-    public void setConnectionString(String key, String value){
+    public void setConnectionString(String key, String value) {
         this.configuration.put(key, value);
     }
 }
