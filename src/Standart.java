@@ -1,13 +1,12 @@
 import Interfaces.PasswordType;
 import Interfaces.Passwords;
+import Interfaces.PasswordCategory;
+import java.util.List;
 
-public class Standart implements Passwords {
+public class Standart implements Passwords, PasswordCategory {
     private String password;
     private PasswordType type;
 
-    /**
-     * Constructor to initialize.
-     */
     protected Standart() {
         this.type = PasswordType.STANDART;
     }
@@ -30,5 +29,20 @@ public class Standart implements Passwords {
     @Override
     public void show() {
         System.out.println("Password: " + this.password);
+    }
+
+    @Override
+    public void add(PasswordCategory category) {
+        throw new UnsupportedOperationException("Cannot add a category to a password.");
+    }
+
+    @Override
+    public void remove(PasswordCategory category) {
+        throw new UnsupportedOperationException("Cannot remove a category from a password.");
+    }
+
+    @Override
+    public List<PasswordCategory> getChildren() {
+        return null;
     }
 }

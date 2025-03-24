@@ -1,12 +1,14 @@
 import Interfaces.PasswordType;
 import Interfaces.Passwords;
+import Interfaces.PasswordCategory;
+import java.util.List;
 
-public class Strong implements Passwords {
+public class Strong implements Passwords, PasswordCategory {
     private String password;
     private PasswordType type;
 
     /**
-     * Constructor to initialize.
+     * Construtor para inicialização.
      */
     protected Strong() {
         this.type = PasswordType.STRONG;
@@ -27,7 +29,23 @@ public class Strong implements Passwords {
         return this.type;
     }
 
+    @Override
     public void show() {
         System.out.println("Password: " + this.password);
+    }
+
+    @Override
+    public void add(PasswordCategory category) {
+        throw new UnsupportedOperationException("Cannot add a category to a password.");
+    }
+
+    @Override
+    public void remove(PasswordCategory category) {
+        throw new UnsupportedOperationException("Cannot remove a category from a password.");
+    }
+
+    @Override
+    public List<PasswordCategory> getChildren() {
+        return null;
     }
 }
