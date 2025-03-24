@@ -2,8 +2,7 @@
  * A factory abstract class for creating and managing a single instance of ConfigurationManager.
  */
 public abstract class ConfigurationFactory {
-    // Static instance of ConfigurationManager
-    private static ConfigurationManager instance;
+    private static volatile ConfigurationManager instance;
 
     /**
      * Provides a single instance of ConfigurationManager.
@@ -11,7 +10,11 @@ public abstract class ConfigurationFactory {
      */
     public static ConfigurationManager getConfigurationManager() {
         if (instance == null) {
-            instance = new ConfigurationManager();
+            synchronized (ConfigurationFactory.class) {
+                if (instance == null) {
+                    instance = new ConfigurationManager();
+                }
+            }
         }
         return instance;
     }

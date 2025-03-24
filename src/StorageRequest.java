@@ -1,30 +1,24 @@
 import Exceptions.ServiceNotFoundException;
-import Interfaces.Storage;
+import Interfaces.StorageImplementation;
+import Interfaces.StorageManager;
 
-import java.util.HashMap;
-import java.util.UUID;
+public class StorageRequest extends StorageManager {
 
-public class StorageRequest {
-    protected HashMap<String, StorageAPI> services = new HashMap<String, StorageAPI>();
-    public StorageRequest(){
-
+    public StorageRequest(StorageImplementation storageImplementation) {
+        super(storageImplementation);
     }
 
-    public String getStorage(String serviceId, String storageId) throws ServiceNotFoundException {
-        if(this.services.containsKey(serviceId)) {
-            return this.services.get(serviceId).getStorage(storageId);
-        }else throw new ServiceNotFoundException();
-    }
-    public String setStorage(String serviceId, String storage) throws ServiceNotFoundException {
-        if(this.services.containsKey(serviceId)) {
-            return this.services.get(serviceId).setStorage(storage);
-        }else throw new ServiceNotFoundException();
+    @Override
+    public String getStorage(String storageId) throws ServiceNotFoundException {
+        String result = storageImplementation.getStorage(storageId);
+        if (result == null) {
+            throw new ServiceNotFoundException();
+        }
+        return result;
     }
 
-    public String addService(Storage service) {
-        String id = UUID.randomUUID().toString();
-        this.services.put(id, service);
-
-        return id;
+    @Override
+    public String setStorage(String storage) {
+        return storageImplementation.setStorage(storage);
     }
 }

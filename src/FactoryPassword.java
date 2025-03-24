@@ -1,11 +1,19 @@
 import Exceptions.UndefinedPasswordException;
 import Interfaces.Passwords;
 import Interfaces.PasswordType;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A factory abstract class for creating different types of passwords.
  */
 public abstract class FactoryPassword {
+    private static final Map<PasswordType, Class<? extends Passwords>> registry = new HashMap<>();
+
+    static {
+        registry.put(PasswordType.STANDART, Standart.class);
+        registry.put(PasswordType.STRONG, Strong.class);
+    }
 
     /**
      * Creates an instance of a password based on the given type.
@@ -14,13 +22,14 @@ public abstract class FactoryPassword {
      * @throws UndefinedPasswordException if the type is invalid
      */
     public static Passwords makePassword(PasswordType type) throws UndefinedPasswordException {
-        switch (type) {
-            case STANDART:
-                return new Standart();
-            case STRONG:
-                return new Strong();
-            default:
-                throw new UndefinedPasswordException("Invalid Password type: " + type);
+        Class<? extends Passwords> passwordClass = registry.get(type);
+        if (passwordClass == null) {
+            throw new UndefinedPasswordException("Invalid Password type: " + type);
+        }
+        try {
+            return passwordClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new UndefinedPasswordException("Error creating password: " + e.getMessage());
         }
     }
 }

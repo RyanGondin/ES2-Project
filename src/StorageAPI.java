@@ -1,27 +1,25 @@
-import Interfaces.Storage;
+import Interfaces.StorageImplementation;
 
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
-public class StorageAPI implements Storage {
-    protected LinkedHashMap<String, String> storage = new LinkedHashMap<String, String>();
-    private String storageId;
+public class StorageAPI implements StorageImplementation {
+    private LinkedHashMap<String, String> storage = new LinkedHashMap<>();
 
-    public  StorageAPI() {
-    }
-
+    @Override
     public String getStorage(String storageId) {
         if (storageId.equals("0")) {
-            String agg = "";
+            StringBuilder agg = new StringBuilder();
             for (String key : storage.keySet()) {
-                agg += storage.get(key);
+                agg.append(storage.get(key));
             }
-            return agg;
+            return agg.toString();
         } else {
             return this.storage.get(storageId);
         }
     }
 
+    @Override
     public String setStorage(String storage) {
         String id = UUID.randomUUID().toString();
         this.storage.put(id, storage);

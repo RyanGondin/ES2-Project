@@ -1,6 +1,8 @@
 import Interfaces.Passwords;
 import Exceptions.UndefinedPasswordException;
 import Interfaces.PasswordType;
+import Interfaces.StorageImplementation;
+import Interfaces.StorageManager;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,5 +17,17 @@ public class Main {
         } catch (UndefinedPasswordException e) {
             e.printStackTrace();
         }
+
+        // Use StorageAPI as the implementation
+        StorageImplementation localStorage = new StorageAPI();
+        StorageManager storageManager = new StorageRequest(localStorage);
+
+        // Store and retrieve data
+        String storageId = storageManager.setStorage("MyPassword123");
+        System.out.println("Stored ID: " + storageId);
+
+        String retrievedData = storageManager.getStorage(storageId);
+        System.out.println("Retrieved Data: " + retrievedData);
+
     }
 }
