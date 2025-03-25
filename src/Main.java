@@ -5,39 +5,84 @@ import Interfaces.StorageImplementation;
 
 import java.util.Scanner;
 import java.util.LinkedHashMap;
+import java.io.File;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        StorageImplementation localStorage = new StorageAPI();
-        StorageManager storageManager = StorageManagerFactory.getInstance(localStorage, false); // Use StorageRequest
 
-        while (true) {
-            System.out.println("\n=== Password Manager ===");
-            System.out.println("1. Create a Strong Password");
-            System.out.println("2. Create a Standard Password");
-            System.out.println("3. Store a Password");
-            System.out.println("4. Retrieve a Password by ID");
-            System.out.println("5. Display All Stored Passwords");
-            System.out.println("6. Exit");
-            System.out.print("Choose an option: ");
+        StorageAPI storageAPI = new StorageAPI(null);
 
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+        try {
+            // Check if the master password is already set
+            File masterPasswordFile = new File("master_password.bin");
+            if (!masterPasswordFile.exists()) {
+                System.out.println("No master password set. Please set a master password:");
+                System.out.print("Enter a new master password: ");
+                String newMasterPassword = scanner.nextLine();
+                System.out.print("Confirm the master password: ");
+                String confirmPassword = scanner.nextLine();
 
-            switch (choice) {
-                case 1 -> createPassword(scanner, PasswordType.STRONG);
-                case 2 -> createPassword(scanner, PasswordType.STANDART);
-                case 3 -> storePassword(scanner, storageManager);
-                case 4 -> retrievePassword(scanner, storageManager);
-                case 5 -> displayAllPasswords(storageManager);
-                case 6 -> {
-                    System.out.println("Exiting Password Manager. Goodbye!");
-                    scanner.close();
+                if (!newMasterPassword.equals(confirmPassword)) {
+                    System.out.println("Passwords do not match. Exiting...");
                     return;
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
+
+                storageAPI.setMasterPassword(newMasterPassword);
+                System.out.println("Master password set successfully!");
             }
+
+            // Prompt the user to enter the master password to unlock the password manager
+            System.out.print("Enter your master password to unlock the password manager: ");
+            String masterPassword = scanner.nextLine();
+
+            if (!storageAPI.verifyMasterPassword(masterPassword)) {
+                System.out.println("Incorrect master password. Exiting...");
+                return;
+            }
+
+            System.out.println("Password manager unlocked!");
+
+            // Initialize the password manager with the verified master password
+            StorageImplementation localStorage = new StorageAPI(masterPassword);
+            StorageManager storageManager = StorageManagerFactory.getInstance(localStorage, false); // Use StorageRequest
+
+            // Load existing passwords from the file
+            if (localStorage instanceof StorageAPI) {
+                ((StorageAPI) localStorage).loadFromFile();
+            }
+
+            // Main menu loop
+            while (true) {
+                System.out.println("\n=== Password Manager ===");
+                System.out.println("1. Create a Strong Password");
+                System.out.println("2. Create a Standard Password");
+                System.out.println("3. Store a Password");
+                System.out.println("4. Retrieve a Password by ID");
+                System.out.println("5. Display All Stored Passwords");
+                System.out.println("6. Exit");
+                System.out.print("Choose an option: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1 -> createPassword(scanner, PasswordType.STRONG);
+                    case 2 -> createPassword(scanner, PasswordType.STANDART);
+                    case 3 -> storePassword(scanner, storageManager);
+                    case 4 -> retrievePassword(scanner, storageManager);
+                    case 5 -> displayAllPasswords(storageManager);
+                    case 6 -> {
+                        System.out.println("Exiting Password Manager. Goodbye!");
+                        scanner.close();
+                        return;
+                    }
+                    default -> System.out.println("Invalid choice. Please try again.");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -125,8 +170,7 @@ public class Main {
         if (storageManager instanceof StorageRequest) {
             StorageImplementation storageImplementation = ((StorageRequest) storageManager).storageImplementation;
             if (storageImplementation instanceof StorageAPI) {
-                StorageAPI storageAPI = (StorageAPI) storageImplementation;
-                LinkedHashMap<String, Passwords> allPasswords = storageAPI.getAllPasswords();
+                LinkedHashMap<String, Passwords> allPasswords = storageManager.getAllPasswords();
 
                 if (allPasswords.isEmpty()) {
                     System.out.println("No passwords stored.");
