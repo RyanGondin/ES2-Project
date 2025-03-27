@@ -1,6 +1,7 @@
+import java.util.LinkedHashMap;
 import Exceptions.ServiceNotFoundException;
 import Interfaces.StorageImplementation;
-import Interfaces.StorageManager;
+import Interfaces.Passwords;
 
 public class StorageRequest extends StorageManager {
 
@@ -18,7 +19,15 @@ public class StorageRequest extends StorageManager {
     }
 
     @Override
-    public String setStorage(String storage) {
-        return storageImplementation.setStorage(storage);
+    public String setStorage(Passwords password) {
+        return storageImplementation.setStorage(password); // Delegate to the implementation
+    }
+
+    @Override
+    public LinkedHashMap<String, Passwords> getAllPasswords() {
+        if (storageImplementation instanceof StorageAPI) {
+            return ((StorageAPI) storageImplementation).getAllPasswords();
+        }
+        throw new UnsupportedOperationException("Storage implementation does not support retrieving all passwords.");
     }
 }

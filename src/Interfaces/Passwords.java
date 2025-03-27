@@ -28,4 +28,13 @@ public interface Passwords {
      * Shows the password.
      */
     void show();
+
+    // New methods for name and username
+    String getName();
+
+    void setName(String name);
+
+    String getUsername();
+
+    void setUsername(String username);
 }

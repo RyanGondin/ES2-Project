@@ -3,16 +3,17 @@ import Interfaces.Passwords;
 import Interfaces.PasswordType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * A factory abstract class for creating different types of passwords.
  */
 public abstract class FactoryPassword {
-    private static final Map<PasswordType, Class<? extends Passwords>> registry = new HashMap<>();
+    private static final Map<PasswordType, Supplier<? extends Passwords>> registry = new HashMap<>();
 
     static {
-        registry.put(PasswordType.STANDART, Standart.class);
-        registry.put(PasswordType.STRONG, Strong.class);
+        registry.put(PasswordType.STANDART, Standart::new);
+        registry.put(PasswordType.STRONG, Strong::new);
     }
 
     /**
@@ -22,14 +23,10 @@ public abstract class FactoryPassword {
      * @throws UndefinedPasswordException if the type is invalid
      */
     public static Passwords makePassword(PasswordType type) throws UndefinedPasswordException {
-        Class<? extends Passwords> passwordClass = registry.get(type);
-        if (passwordClass == null) {
+        Supplier<? extends Passwords> supplier = registry.get(type);
+        if (supplier == null) {
             throw new UndefinedPasswordException("Invalid Password type: " + type);
         }
-        try {
-            return passwordClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new UndefinedPasswordException("Error creating password: " + e.getMessage());
-        }
+        return supplier.get();
     }
 }

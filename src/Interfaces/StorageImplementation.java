@@ -2,5 +2,5 @@ package Interfaces;
 
 public interface StorageImplementation {
     String getStorage(String storageId);
-    String setStorage(String storage);
+    String setStorage(Passwords password);
 }
