@@ -1,5 +1,5 @@
 import Interfaces.StorageImplementation;
-public class StorageManagerFactory {
+public abstract class StorageManagerFactory {
     private static volatile StorageManager instance;
 
     public static StorageManager getInstance(StorageImplementation storageImplementation, boolean useAggregator) {
