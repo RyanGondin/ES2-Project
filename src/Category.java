@@ -1,6 +1,6 @@
-package Interfaces;
 import java.util.ArrayList;
 import java.util.List;
+import Interfaces.PasswordCategory;
 
 public class Category implements PasswordCategory {
     private String name;
