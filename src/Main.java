@@ -59,7 +59,8 @@ public class Main {
                 System.out.println("3. Store a Password");
                 System.out.println("4. Retrieve a Password by ID");
                 System.out.println("5. Display All Stored Passwords");
-                System.out.println("6. Exit");
+                System.out.println("6. Manage Categories");
+                System.out.println("7. Exit");
                 System.out.print("Choose an option: ");
 
                 int choice = scanner.nextInt();
@@ -71,7 +72,8 @@ public class Main {
                     case 3 -> storePassword(scanner, storageAPI);
                     case 4 -> retrievePassword(scanner, storageAPI);
                     case 5 -> displayAllPasswords(storageAPI);
-                    case 6 -> {
+                    case 6 -> manageCategories(scanner, storageAPI);
+                    case 7 -> {
                         System.out.println("Exiting Password Manager. Goodbye!");
                         scanner.close();
                         return;
@@ -173,6 +175,46 @@ public class Main {
                 System.out.println("Password: " + password.getPassword());
                 System.out.println("------------------------");
             });
+        }
+    }
+
+    private static void manageCategories(Scanner scanner, StorageAPI storageAPI) {
+        while (true) {
+            System.out.println("\n=== Category Management ===");
+            System.out.println("1. Display Category Hierarchy");
+            System.out.println("2. Create New Category");
+            System.out.println("3. Add Password to Category");
+            System.out.println("4. Back to Main Menu");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+            
+            switch (choice) {
+                case 1 -> storageAPI.displayCategoryHierarchy();
+                case 2 -> {
+                    System.out.print("Enter category path (e.g., Work/Email): ");
+                    String path = scanner.nextLine();
+                    storageAPI.addPasswordToCategory(path, null); // Just create the category
+                    System.out.println("Category created!");
+                }
+                case 3 -> {
+                    System.out.print("Enter password ID: ");
+                    String passwordId = scanner.nextLine();
+                    System.out.print("Enter category path: ");
+                    String categoryPath = scanner.nextLine();
+                    
+                    Passwords password = storageAPI.getAllPasswords().get(passwordId);
+                    if (password != null) {
+                        storageAPI.addPasswordToCategory(categoryPath, password);
+                        System.out.println("Password added to category!");
+                    } else {
+                        System.out.println("Password not found!");
+                    }
+                }
+                case 4 -> {
+                    return;
+                }
+            }
         }
     }
 }

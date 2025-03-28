@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import Composite.Category;
 import Adapter.FileStorage;
 import Adapter.FileStorageImpl;
 import Adapter.StorageAdapter;
@@ -92,5 +93,18 @@ public class StorageAPI implements StorageImplementation {
         } catch (Exception e) {
             throw new RuntimeException("Error hashing password", e);
         }
+    }
+
+    public Category getRootCategory() {
+        return adapter.getRootCategory();
+    }
+
+    public void addPasswordToCategory(String categoryPath, Passwords password) {
+        adapter.addPasswordToCategory(categoryPath, password);
+    }
+
+    public void displayCategoryHierarchy() {
+        Category root = adapter.getRootCategory();
+        root.show();
     }
 }

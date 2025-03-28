@@ -1,3 +1,4 @@
+package Composite;
 import java.util.ArrayList;
 import java.util.List;
 import Interfaces.PasswordCategory;
@@ -8,6 +9,10 @@ public class Category implements PasswordCategory {
 
     public Category(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     @Override
