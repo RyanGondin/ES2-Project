@@ -1,3 +1,4 @@
+package Factory;
 import Exceptions.UndefinedPasswordException;
 import Interfaces.Passwords;
 import Interfaces.PasswordType;

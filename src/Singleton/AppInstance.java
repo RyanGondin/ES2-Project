@@ -1,3 +1,6 @@
+package Singleton;
+import Factory.ConfigurationFactory;
+
 public class AppInstance {
     // Eager initialization
     private static final AppInstance instance = new AppInstance();

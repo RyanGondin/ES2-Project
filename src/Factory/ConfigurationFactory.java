@@ -1,3 +1,7 @@
+package Factory;
+
+import Singleton.ConfigurationManager;
+
 /**
  * A factory abstract class for creating and managing a single instance of ConfigurationManager.
  */

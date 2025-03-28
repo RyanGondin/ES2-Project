@@ -1,3 +1,4 @@
+package Composite;
 import java.security.SecureRandom;
 
 public class PasswordGenerator {

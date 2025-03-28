@@ -1,7 +1,10 @@
+package Factory;
 import Interfaces.PasswordType;
 import Interfaces.Passwords;
 import Interfaces.PasswordCategory;
 import java.util.List;
+
+import Composite.PasswordGenerator;
 
 public class Standart implements Passwords, PasswordCategory {
     private String password;
@@ -34,6 +37,7 @@ public class Standart implements Passwords, PasswordCategory {
         System.out.println("Name: " + this.name);
         System.out.println("Username: " + this.username);
         System.out.println("Password: " + this.password);
+        System.out.println("Type: Standard (Medium Security)");
     }
 
     @Override
@@ -72,7 +76,8 @@ public class Standart implements Passwords, PasswordCategory {
     }
 
     private String generateStandartPassword() {
-        // Generate a standard password with lowercase and digits only
-        return PasswordGenerator.generatePassword(8, false, true, false);
+        // Standard password: 12 characters, lowercase and digits only
+        // Medium security level for regular accounts
+        return PasswordGenerator.generatePassword(12, false, true, false);
     }
 }
