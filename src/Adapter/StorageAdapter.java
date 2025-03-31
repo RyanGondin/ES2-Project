@@ -18,6 +18,7 @@ public class StorageAdapter implements StorageImplementation {
     
     // Add hierarchical storage
     private Category rootCategory;
+    private String lastAccessedPasswordId; // Add field for last accessed password ID
 
     public StorageAdapter(FileStorage fileStorage, String masterPassword, boolean loadStorage) {
         this.fileStorage = fileStorage;
@@ -36,14 +37,25 @@ public class StorageAdapter implements StorageImplementation {
 
     @Override
     public String getStorage(String storageId) {
+        this.lastAccessedPasswordId = storageId;
+        saveStorage();
         return storage.get(storageId) != null ? storage.get(storageId).getPassword() : null;
     }
 
     @Override
     public String setStorage(Passwords password) {
+        // Generate a unique ID for the password
         String id = UUID.randomUUID().toString();
+        
+        // Store the password in the map
         storage.put(id, password);
+        
+        // Update the last accessed ID
+        this.lastAccessedPasswordId = id;
+        
+        // Save the state to persistent storage
         saveStorage();
+        
         return id;
     }
 
@@ -326,5 +338,16 @@ public class StorageAdapter implements StorageImplementation {
                 }
             }
         }
+    }
+
+    public void restoreState(LinkedHashMap<String, Passwords> savedPasswords, Category savedRootCategory) {
+        // Deep copy the passwords to restore
+        this.storage = new LinkedHashMap<>(savedPasswords);
+        
+        // Replace the category structure
+        this.rootCategory = savedRootCategory;
+        
+        // Persist the restored state
+        saveStorage();
     }
 }

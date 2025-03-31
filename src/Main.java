@@ -8,6 +8,9 @@ import java.util.Scanner;
 import java.util.LinkedHashMap;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -60,7 +63,8 @@ public class Main {
                 System.out.println("4. Retrieve a Password by ID");
                 System.out.println("5. Display All Stored Passwords");
                 System.out.println("6. Manage Categories");
-                System.out.println("7. Exit");
+                System.out.println("7. Restore Previous State");
+                System.out.println("8. Exit");
                 System.out.print("Choose an option: ");
 
                 int choice = scanner.nextInt();
@@ -73,7 +77,8 @@ public class Main {
                     case 4 -> retrievePassword(scanner, storageAPI);
                     case 5 -> displayAllPasswords(storageAPI);
                     case 6 -> manageCategories(scanner, storageAPI);
-                    case 7 -> {
+                    case 7 -> restorePreviousState(scanner, storageAPI);
+                    case 8 -> {
                         System.out.println("Exiting Password Manager. Goodbye!");
                         scanner.close();
                         return;
@@ -215,6 +220,31 @@ public class Main {
                     return;
                 }
             }
+        }
+    }
+
+    private static void restorePreviousState(Scanner scanner, StorageAPI storageAPI) {
+        List<LocalDateTime> timestamps = storageAPI.getCaretaker().getMementoTimestamps();
+        
+        if (timestamps.isEmpty()) {
+            System.out.println("No previous states available to restore.");
+            return;
+        }
+        
+        System.out.println("\n=== Available States ===");
+        for (int i = 0; i < timestamps.size(); i++) {
+            System.out.println((i + 1) + ". " + timestamps.get(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        }
+        
+        System.out.print("Enter the number of the state to restore (0 to cancel): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        
+        if (choice > 0 && choice <= timestamps.size()) {
+            storageAPI.restoreFromMemento(storageAPI.getCaretaker().getMemento(choice - 1));
+            System.out.println("State restored successfully!");
+        } else if (choice != 0) {
+            System.out.println("Invalid selection.");
         }
     }
 }

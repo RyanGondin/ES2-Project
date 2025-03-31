@@ -11,10 +11,15 @@ import Composite.Category;
 import Adapter.FileStorage;
 import Adapter.FileStorageImpl;
 import Adapter.StorageAdapter;
+import Memento.PasswordManagerCaretaker;
+import Memento.PasswordManagerMemento;
+import Memento.MementoOriginator;
 
 public class StorageAPI implements StorageImplementation {
     private final StorageAdapter adapter;
     private static final boolean LOAD_STORAGE = true; // Add this flag
+    private String lastAccessedPasswordId;
+    private PasswordManagerCaretaker caretaker = new PasswordManagerCaretaker(10); // Store 10 states
 
     public StorageAPI(String masterPassword) {
         this(masterPassword, LOAD_STORAGE);
@@ -28,14 +33,48 @@ public class StorageAPI implements StorageImplementation {
         this.adapter = new StorageAdapter(fileStorage, masterPassword, loadStorage);
     }
 
+    // Create a memento capturing current state
+    public PasswordManagerMemento createMemento() {
+        return new PasswordManagerMemento(
+            adapter.getAllPasswords(), 
+            adapter.getRootCategory(),
+            lastAccessedPasswordId
+        );
+    }
+
+    // Restore state from a memento
+    public void restoreFromMemento(PasswordManagerMemento memento) {
+        if (memento != null) {
+            // Now we're using the interface methods
+            MementoOriginator originator = memento;
+            adapter.restoreState(
+                originator.getSavedPasswords(),
+                originator.getSavedRootCategory()
+            );
+            this.lastAccessedPasswordId = originator.getLastAccessedPasswordId();
+        }
+    }
+
+    // Save state after important operations
+    private void saveState() {
+        PasswordManagerMemento memento = createMemento();
+        caretaker.addMemento(memento);
+    }
+
+    // Methods to modify to track last accessed password
     @Override
     public String getStorage(String storageId) {
+        this.lastAccessedPasswordId = storageId;
+        saveState(); // Save state after access
         return adapter.getStorage(storageId);
     }
 
     @Override
     public String setStorage(Passwords password) {
-        return adapter.setStorage(password);
+        String id = adapter.setStorage(password);
+        this.lastAccessedPasswordId = id;
+        saveState(); // Save state after creating a password
+        return id;
     }
 
     public LinkedHashMap<String, Passwords> getAllPasswords() {
@@ -106,5 +145,9 @@ public class StorageAPI implements StorageImplementation {
     public void displayCategoryHierarchy() {
         Category root = adapter.getRootCategory();
         root.show();
+    }
+
+    public PasswordManagerCaretaker getCaretaker() {
+        return caretaker;
     }
 }
