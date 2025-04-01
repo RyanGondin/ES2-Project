@@ -1,5 +1,5 @@
 import Interfaces.Passwords;
-import Interfaces.StorageAPI;
+import Adapter.StorageAPI;
 import Exceptions.UndefinedPasswordException;
 import Factory.FactoryPassword;
 import Interfaces.PasswordType;

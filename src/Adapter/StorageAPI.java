@@ -1,4 +1,4 @@
-package Interfaces;
+package Adapter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -8,12 +8,12 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import Composite.Category;
-import Adapter.FileStorage;
-import Adapter.FileStorageImpl;
-import Adapter.StorageAdapter;
+import Interfaces.FileStorage;
+import Interfaces.Passwords;
+import Interfaces.StorageImplementation;
 import Memento.PasswordManagerCaretaker;
 import Memento.PasswordManagerMemento;
-import Memento.MementoOriginator;
+import Interfaces.MementoOriginator;
 
 public class StorageAPI implements StorageImplementation {
     private final StorageAdapter adapter;
@@ -27,7 +27,7 @@ public class StorageAPI implements StorageImplementation {
 
     // Add a constructor with a flag to control storage loading
     public StorageAPI(String masterPassword, boolean loadStorage) {
-        FileStorage fileStorage = loadStorage ? 
+        FileStorage fileStorage = loadStorage ?
             new FileStorageImpl("passwords.csv") : 
             new FileStorageImpl("dummy.tmp");
         this.adapter = new StorageAdapter(fileStorage, masterPassword, loadStorage);

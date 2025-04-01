@@ -1,9 +1,8 @@
-package Memento;
+package Interfaces;
 
 import java.util.LinkedHashMap;
 
 import Composite.Category;
-import Interfaces.Passwords;
 
 /**
  * Interface that only the Originator (StorageAPI) can access

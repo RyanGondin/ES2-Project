@@ -3,6 +3,8 @@ package Memento;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+
+import Interfaces.MementoOriginator;
 import Interfaces.Passwords;
 import Composite.Category;
 import Interfaces.PasswordCategory;

@@ -1,11 +1,9 @@
 package Adapter;
-import Interfaces.StorageImplementation;
-import Interfaces.Passwords;
+import Interfaces.*;
 import Factory.Standart;
 import Composite.Category;
-import Interfaces.PasswordCategory; // Add this import
 import Factory.FactoryPassword; // Add this import
-import Interfaces.PasswordType; // Add this import
+
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.UUID;

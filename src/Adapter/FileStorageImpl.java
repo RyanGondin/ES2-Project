@@ -1,4 +1,6 @@
 package Adapter;
+import Interfaces.FileStorage;
+
 import java.io.*;
 
 public class FileStorageImpl implements FileStorage {
