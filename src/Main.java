@@ -1,22 +1,29 @@
 import Interfaces.Passwords;
+import Adapter.StorageAPI;
 import Exceptions.UndefinedPasswordException;
+import Factory.FactoryPassword;
 import Interfaces.PasswordType;
-import Interfaces.StorageImplementation;
 
 import java.util.Scanner;
 import java.util.LinkedHashMap;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        StorageAPI storageAPI = new StorageAPI(null);
+        // Don't initialize with null - just declare the variable
+        StorageAPI storageAPI;
 
         try {
-            // Check if the master password is already set
             File masterPasswordFile = new File("master_password.bin");
+            // Initialize with empty password but skip loading storage
+            storageAPI = new StorageAPI("", false);
+            
             if (!masterPasswordFile.exists()) {
                 System.out.println("No master password set. Please set a master password:");
                 System.out.print("Enter a new master password: ");
@@ -44,14 +51,8 @@ public class Main {
 
             System.out.println("Password manager unlocked!");
 
-            // Initialize the password manager with the verified master password
-            StorageImplementation localStorage = new StorageAPI(masterPassword);
-            StorageManager storageManager = StorageManagerFactory.getInstance(localStorage, false); // Use StorageRequest
-
-            // Load existing passwords from the file
-            if (localStorage instanceof StorageAPI) {
-                ((StorageAPI) localStorage).loadFromFile();
-            }
+            // Now initialize with the actual master password for proper encryption/decryption
+            storageAPI = new StorageAPI(masterPassword);
 
             // Main menu loop
             while (true) {
@@ -61,7 +62,9 @@ public class Main {
                 System.out.println("3. Store a Password");
                 System.out.println("4. Retrieve a Password by ID");
                 System.out.println("5. Display All Stored Passwords");
-                System.out.println("6. Exit");
+                System.out.println("6. Manage Categories");
+                System.out.println("7. Restore Previous State");
+                System.out.println("8. Exit");
                 System.out.print("Choose an option: ");
 
                 int choice = scanner.nextInt();
@@ -70,10 +73,12 @@ public class Main {
                 switch (choice) {
                     case 1 -> createPassword(scanner, PasswordType.STRONG);
                     case 2 -> createPassword(scanner, PasswordType.STANDART);
-                    case 3 -> storePassword(scanner, storageManager);
-                    case 4 -> retrievePassword(scanner, storageManager);
-                    case 5 -> displayAllPasswords(storageManager);
-                    case 6 -> {
+                    case 3 -> storePassword(scanner, storageAPI);
+                    case 4 -> retrievePassword(scanner, storageAPI);
+                    case 5 -> displayAllPasswords(storageAPI);
+                    case 6 -> manageCategories(scanner, storageAPI);
+                    case 7 -> restorePreviousState(scanner, storageAPI);
+                    case 8 -> {
                         System.out.println("Exiting Password Manager. Goodbye!");
                         scanner.close();
                         return;
@@ -95,7 +100,7 @@ public class Main {
         }
     }
 
-    private static void storePassword(Scanner scanner, StorageManager storageManager) {
+    private static void storePassword(Scanner scanner, StorageAPI storageAPI) {
         System.out.print("Enter the name of the service (e.g., Email, Bank): ");
         String name = scanner.nextLine();
 
@@ -137,58 +142,109 @@ public class Main {
             password.setUsername(username);
             password.setPassword(passwordValue);
 
-            // Cast storageManager to StorageRequest to access the correct setStorage method
-            if (storageManager instanceof StorageRequest) {
-                StorageRequest storageRequest = (StorageRequest) storageManager;
-                String id = storageRequest.storageImplementation.setStorage(password);
-                System.out.println("Password stored successfully! ID: " + id);
-            } else {
-                System.out.println("Storage manager is not compatible.");
-            }
+            String id = storageAPI.setStorage(password);
+            System.out.println("Password stored successfully! ID: " + id);
         } catch (UndefinedPasswordException e) {
             System.out.println("Error storing password: " + e.getMessage());
         }
     }
 
-    private static void retrievePassword(Scanner scanner, StorageManager storageManager) {
+    private static void retrievePassword(Scanner scanner, StorageAPI storageAPI) {
         System.out.print("Enter the ID of the password to retrieve: ");
         String id = scanner.nextLine();
 
-        try {
-            String password = storageManager.getStorage(id);
-            if (password != null) {
-                System.out.println("Retrieved Password: " + password);
-            } else {
-                System.out.println("No password found with the given ID.");
-            }
-        } catch (Exception e) {
-            System.out.println("Error retrieving password: " + e.getMessage());
+        LinkedHashMap<String, Passwords> allPasswords = storageAPI.getAllPasswords();
+        Passwords password = allPasswords.get(id);
+
+        if (password != null) {
+            System.out.println("\nRetrieved Password Information:");
+            System.out.println("Service Name: " + password.getName());
+            System.out.println("Username: " + password.getUsername());
+            System.out.println("Password: " + password.getPassword());
+        } else {
+            System.out.println("No password found with the given ID.");
         }
     }
 
-    private static void displayAllPasswords(StorageManager storageManager) {
-        if (storageManager instanceof StorageRequest) {
-            StorageImplementation storageImplementation = ((StorageRequest) storageManager).storageImplementation;
-            if (storageImplementation instanceof StorageAPI) {
-                LinkedHashMap<String, Passwords> allPasswords = storageManager.getAllPasswords();
+    private static void displayAllPasswords(StorageAPI storageAPI) {
+        LinkedHashMap<String, Passwords> allPasswords = storageAPI.getAllPasswords();
 
-                if (allPasswords.isEmpty()) {
-                    System.out.println("No passwords stored.");
-                } else {
-                    System.out.println("\n=== Stored Passwords ===");
-                    allPasswords.forEach((id, password) -> {
-                        System.out.println("ID: " + id);
-                        System.out.println("Service Name: " + password.getName());
-                        System.out.println("Username: " + password.getUsername());
-                        System.out.println("Password: " + password.getPassword());
-                        System.out.println("------------------------");
-                    });
-                }
-            } else {
-                System.out.println("Storage implementation does not support retrieving all passwords.");
-            }
+        if (allPasswords.isEmpty()) {
+            System.out.println("No passwords stored.");
         } else {
-            System.out.println("Storage manager is not compatible.");
+            System.out.println("\n=== Stored Passwords ===");
+            allPasswords.forEach((id, password) -> {
+                System.out.println("ID: " + id);
+                System.out.println("Service Name: " + password.getName());
+                System.out.println("Username: " + password.getUsername());
+                System.out.println("Password: " + password.getPassword());
+                System.out.println("------------------------");
+            });
+        }
+    }
+
+    private static void manageCategories(Scanner scanner, StorageAPI storageAPI) {
+        while (true) {
+            System.out.println("\n=== Category Management ===");
+            System.out.println("1. Display Category Hierarchy");
+            System.out.println("2. Create New Category");
+            System.out.println("3. Add Password to Category");
+            System.out.println("4. Back to Main Menu");
+            
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+            
+            switch (choice) {
+                case 1 -> storageAPI.displayCategoryHierarchy();
+                case 2 -> {
+                    System.out.print("Enter category path (e.g., Work/Email): ");
+                    String path = scanner.nextLine();
+                    storageAPI.addPasswordToCategory(path, null); // Just create the category
+                    System.out.println("Category created!");
+                }
+                case 3 -> {
+                    System.out.print("Enter password ID: ");
+                    String passwordId = scanner.nextLine();
+                    System.out.print("Enter category path: ");
+                    String categoryPath = scanner.nextLine();
+                    
+                    Passwords password = storageAPI.getAllPasswords().get(passwordId);
+                    if (password != null) {
+                        storageAPI.addPasswordToCategory(categoryPath, password);
+                        System.out.println("Password added to category!");
+                    } else {
+                        System.out.println("Password not found!");
+                    }
+                }
+                case 4 -> {
+                    return;
+                }
+            }
+        }
+    }
+
+    private static void restorePreviousState(Scanner scanner, StorageAPI storageAPI) {
+        List<LocalDateTime> timestamps = storageAPI.getCaretaker().getMementoTimestamps();
+        
+        if (timestamps.isEmpty()) {
+            System.out.println("No previous states available to restore.");
+            return;
+        }
+        
+        System.out.println("\n=== Available States ===");
+        for (int i = 0; i < timestamps.size(); i++) {
+            System.out.println((i + 1) + ". " + timestamps.get(i).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        }
+        
+        System.out.print("Enter the number of the state to restore (0 to cancel): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        
+        if (choice > 0 && choice <= timestamps.size()) {
+            storageAPI.restoreFromMemento(storageAPI.getCaretaker().getMemento(choice - 1));
+            System.out.println("State restored successfully!");
+        } else if (choice != 0) {
+            System.out.println("Invalid selection.");
         }
     }
 }

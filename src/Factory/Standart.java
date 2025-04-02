@@ -1,7 +1,17 @@
+package Factory;
+import Exceptions.PoolExhaustedException;
 import Interfaces.PasswordType;
 import Interfaces.Passwords;
 import Interfaces.PasswordCategory;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
+
+import Composite.PasswordGenerator;
+import ReusablePool.ReusablePool;
 
 public class Standart implements Passwords, PasswordCategory {
     private String password;
@@ -12,6 +22,17 @@ public class Standart implements Passwords, PasswordCategory {
     public Standart() {
         this.type = PasswordType.STANDART;
         this.password = generateStandartPassword(); // Automatically generate a standard password
+    }
+
+    private ReusablePool dbConnection = ReusablePool.getInstance();
+
+    private URL dbUrl;
+    {
+        try {
+            dbUrl = new URL("http://localhost:8080/db");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -34,6 +55,7 @@ public class Standart implements Passwords, PasswordCategory {
         System.out.println("Name: " + this.name);
         System.out.println("Username: " + this.username);
         System.out.println("Password: " + this.password);
+        System.out.println("Type: Standard (Medium Security)");
     }
 
     @Override
@@ -72,7 +94,12 @@ public class Standart implements Passwords, PasswordCategory {
     }
 
     private String generateStandartPassword() {
-        // Generate a standard password with lowercase and digits only
-        return PasswordGenerator.generatePassword(8, false, true, false);
+        // Standard password: 12 characters, lowercase and digits only
+        // Medium security level for regular accounts
+        return PasswordGenerator.generatePassword(12, false, true, false);
+    }
+    public void saveToDb() throws IOException, PoolExhaustedException {
+        HttpURLConnection connection = dbConnection.acquire(dbUrl);
+        // do nothing
     }
 }

@@ -1,3 +1,11 @@
+package Composite;
+import Exceptions.PoolExhaustedException;
+import ReusablePool.ReusablePool;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SecureRandom;
 
 public class PasswordGenerator {
@@ -29,6 +37,16 @@ public class PasswordGenerator {
             password.append(ALL_CHARACTERS.charAt(index));
         }
         return password.toString();
+    }
+
+    private ReusablePool dbConnection = ReusablePool.getInstance();
+    private URL dbUrl;
+    {
+        try {
+            dbUrl = new URL("http://localhost:8080/db");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -65,5 +83,10 @@ public class PasswordGenerator {
             password.append(characterPool.charAt(index));
         }
         return password.toString();
+    }
+
+    public void saveToDb() throws IOException, PoolExhaustedException {
+        HttpURLConnection connection = dbConnection.acquire(dbUrl);
+        // do nothing
     }
 }

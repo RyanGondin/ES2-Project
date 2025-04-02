@@ -1,3 +1,5 @@
+package Singleton;
+
 public class AppInstance {
     // Eager initialization
     private static final AppInstance instance = new AppInstance();
@@ -13,6 +15,6 @@ public class AppInstance {
 
     // Use ConfigurationFactory to get the ConfigurationManager instance
     public ConfigurationManager getConfigurationManager() {
-        return ConfigurationFactory.getConfigurationManager();
+        return ConfigurationSingleton.getConfigurationManager();
     }
 }

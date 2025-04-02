@@ -1,7 +1,9 @@
+package Singleton;
+
 /**
  * A factory abstract class for creating and managing a single instance of ConfigurationManager.
  */
-public abstract class ConfigurationFactory {
+public abstract class ConfigurationSingleton {
     private static volatile ConfigurationManager instance;
 
     /**
@@ -10,7 +12,7 @@ public abstract class ConfigurationFactory {
      */
     public static ConfigurationManager getConfigurationManager() {
         if (instance == null) {
-            synchronized (ConfigurationFactory.class) {
+            synchronized (ConfigurationSingleton.class) {
                 if (instance == null) {
                     instance = new ConfigurationManager();
                 }
