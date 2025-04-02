@@ -1,5 +1,4 @@
 package Singleton;
-import Factory.ConfigurationFactory;
 
 public class AppInstance {
     // Eager initialization
@@ -16,6 +15,6 @@ public class AppInstance {
 
     // Use ConfigurationFactory to get the ConfigurationManager instance
     public ConfigurationManager getConfigurationManager() {
-        return ConfigurationFactory.getConfigurationManager();
+        return ConfigurationSingleton.getConfigurationManager();
     }
 }
