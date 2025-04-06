@@ -12,14 +12,10 @@ import Interfaces.FileStorage;
 import Interfaces.Passwords;
 import Interfaces.StorageImplementation;
 import Memento.PasswordManagerCaretaker;
-import Memento.PasswordManagerMemento;
-import Interfaces.MementoOriginator;
 
 public class StorageAPI implements StorageImplementation {
     private final StorageAdapter adapter;
     private static final boolean LOAD_STORAGE = true; // Add this flag
-    private String lastAccessedPasswordId;
-    private PasswordManagerCaretaker caretaker = new PasswordManagerCaretaker(10); // Store 10 states
 
     public StorageAPI(String masterPassword) {
         this(masterPassword, LOAD_STORAGE);
@@ -31,34 +27,6 @@ public class StorageAPI implements StorageImplementation {
             new FileStorageImpl("passwords.csv") : 
             new FileStorageImpl("dummy.tmp");
         this.adapter = new StorageAdapter(fileStorage, masterPassword, loadStorage);
-    }
-
-    // Create a memento capturing current state
-    public PasswordManagerMemento createMemento() {
-        return new PasswordManagerMemento(
-            adapter.getAllPasswords(), 
-            adapter.getRootCategory(),
-            lastAccessedPasswordId
-        );
-    }
-
-    // Restore state from a memento
-    public void restoreFromMemento(PasswordManagerMemento memento) {
-        if (memento != null) {
-            // Now we're using the interface methods
-            MementoOriginator originator = memento;
-            adapter.restoreState(
-                originator.getSavedPasswords(),
-                originator.getSavedRootCategory()
-            );
-            this.lastAccessedPasswordId = originator.getLastAccessedPasswordId();
-        }
-    }
-
-    // Save state after important operations
-    private void saveState() {
-        PasswordManagerMemento memento = createMemento();
-        caretaker.addMemento(memento);
     }
 
     // Methods to modify to track last accessed password

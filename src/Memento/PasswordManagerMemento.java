@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
-import Interfaces.MementoOriginator;
 import Interfaces.Passwords;
 import Composite.Category;
 import Interfaces.PasswordCategory;
@@ -14,7 +13,7 @@ import Factory.FactoryPassword;
  * Represents a snapshot of the password manager state
  * that can be restored later.
  */
-public class PasswordManagerMemento implements Serializable, MementoOriginator {
+public class PasswordManagerMemento implements Serializable {
     private final LinkedHashMap<String, Passwords> passwordsState;
     private final Category rootCategoryState;
     private final String lastAccessedPasswordId;
@@ -51,6 +50,7 @@ public class PasswordManagerMemento implements Serializable, MementoOriginator {
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
+
     
     private Category deepCopyCategory(Category original) {
         if (original == null) return null;
@@ -77,5 +77,13 @@ public class PasswordManagerMemento implements Serializable, MementoOriginator {
         }
         
         return copy;
+    }
+
+    public PasswordManagerMemento createMemento() {
+        return new PasswordManagerMemento(
+                getSavedPasswords(),
+                getSavedRootCategory(),
+                lastAccessedPasswordId
+        );
     }
 }

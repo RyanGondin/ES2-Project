@@ -3,6 +3,7 @@ import Adapter.StorageAPI;
 import Exceptions.UndefinedPasswordException;
 import Factory.FactoryPassword;
 import Interfaces.PasswordType;
+import Memento.MementoOriginator;
 
 import java.util.Scanner;
 import java.util.LinkedHashMap;
@@ -77,7 +78,7 @@ public class Main {
                     case 4 -> retrievePassword(scanner, storageAPI);
                     case 5 -> displayAllPasswords(storageAPI);
                     case 6 -> manageCategories(scanner, storageAPI);
-                    case 7 -> restorePreviousState(scanner, storageAPI);
+                    case 7 -> restorePreviousState(scanner, storageAPI, new MementoOriginator());
                     case 8 -> {
                         System.out.println("Exiting Password Manager. Goodbye!");
                         scanner.close();
@@ -223,7 +224,7 @@ public class Main {
         }
     }
 
-    private static void restorePreviousState(Scanner scanner, StorageAPI storageAPI) {
+    private static void restorePreviousState(Scanner scanner, StorageAPI storageAPI, MementoOriginator memento) {
         List<LocalDateTime> timestamps = storageAPI.getCaretaker().getMementoTimestamps();
         
         if (timestamps.isEmpty()) {
@@ -241,7 +242,7 @@ public class Main {
         scanner.nextLine(); // Consume newline
         
         if (choice > 0 && choice <= timestamps.size()) {
-            storageAPI.restoreFromMemento(storageAPI.getCaretaker().getMemento(choice - 1));
+            memento.restoreFromMemento(storageAPI.getCaretaker().getMemento(choice - 1));
             System.out.println("State restored successfully!");
         } else if (choice != 0) {
             System.out.println("Invalid selection.");
