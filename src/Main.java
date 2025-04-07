@@ -1,5 +1,5 @@
 import Interfaces.Passwords;
-import Adapter.StorageAPI;
+import Strategy.StorageAPI;
 import Exceptions.UndefinedPasswordException;
 import Factory.FactoryPassword;
 import Interfaces.PasswordType;
@@ -23,7 +23,7 @@ public class Main {
         try {
             File masterPasswordFile = new File("master_password.bin");
             // Initialize with empty password but skip loading storage
-            storageAPI = new StorageAPI("", false);
+            storageAPI = new StorageAPI("", false);  // This would need to throw IOException
             
             if (!masterPasswordFile.exists()) {
                 System.out.println("No master password set. Please set a master password:");
@@ -88,7 +88,8 @@ public class Main {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("Error accessing files: " + e.getMessage());
+            return;  // Exit if we can't access files
         }
     }
 
@@ -143,7 +144,7 @@ public class Main {
             password.setUsername(username);
             password.setPassword(passwordValue);
 
-            String id = storageAPI.setStorage(password);
+            String id = storageAPI.savePassword(password);
             System.out.println("Password stored successfully! ID: " + id);
         } catch (UndefinedPasswordException e) {
             System.out.println("Error storing password: " + e.getMessage());

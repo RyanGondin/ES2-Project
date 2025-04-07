@@ -13,6 +13,7 @@ import ReusablePool.ReusablePool;
 public class Category implements PasswordCategory {
     private String name;
     private List<PasswordCategory> children = new ArrayList<>();
+    private List<String> passwordIds = new ArrayList<>(); // Add this field
     private ReusablePool dbConnection = ReusablePool.getInstance();
     private URL dbUrl;
     {
@@ -33,9 +34,26 @@ public class Category implements PasswordCategory {
 
     @Override
     public void show() {
-        System.out.println("Category: " + name);
+        show(0);
+    }
+
+    private void show(int indent) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < indent; i++) {
+            sb.append("  ");
+        }
+        sb.append("- ").append(name);
+        if (!passwordIds.isEmpty()) {
+            sb.append(" (").append(passwordIds.size()).append(" passwords)");
+        }
+        System.out.println(sb.toString());
+
         for (PasswordCategory child : children) {
-            child.show();
+            if (child instanceof Category) {
+                ((Category) child).show(indent + 1);
+            } else {
+                child.show();
+            }
         }
     }
 
@@ -54,8 +72,21 @@ public class Category implements PasswordCategory {
         return children;
     }
 
+    public void addPasswordId(String id) {
+        passwordIds.add(id);
+    }
+
+    public List<String> getPasswordIds() {
+        return passwordIds;
+    }
+
     public void saveToDb() throws IOException, PoolExhaustedException {
         HttpURLConnection connection = dbConnection.acquire(dbUrl);
         // do nothing
+    }
+
+    public void someMethodWithConnection() {
+        // If you don't need the connection variable, remove it
+        // Or use it properly
     }
 }

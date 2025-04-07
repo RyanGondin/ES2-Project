@@ -1,4 +1,4 @@
-package Adapter;
+package Strategy;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
