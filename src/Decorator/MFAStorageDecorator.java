@@ -1,30 +1,94 @@
 package Decorator;
 
-import Adapter.StorageAPI;
+import Interfaces.StorageStrategy;
+import Strategy.StorageAPI;
+import Interfaces.Passwords;
+import Composite.Category;
 import java.util.Scanner;
+import java.util.LinkedHashMap;
+import java.util.Random;
 
+/**
+ * A decorator that adds dynamic Multi-Factor Authentication capability
+ * by generating a random 6-digit code for user verification.
+ */
 public class MFAStorageDecorator extends StorageDecorator {
-    public MFAStorageDecorator(StorageAPI storageAPI) {
-        super(storageAPI);
+    private Random random = new Random();
+    private String lastGeneratedCode = null;
+
+    public MFAStorageDecorator(StorageStrategy storageStrategy) {
+        super(storageStrategy);
     }
 
     @Override
-    public String setStorage(Interfaces.Passwords password) {
-        if (!autenticarMFA()) {
-            System.out.println("Autenticação falhou. Operação cancelada.");
+    public String savePassword(Passwords password) {
+        if (!authenticateMFA()) {
+            System.out.println("MFA authentication failed. Operation cancelled.");
             return null;
         }
-        return super.setStorage(password);
+        return super.savePassword(password);
     }
 
-    private boolean autenticarMFA() {
-        // Usando try-with-resources para garantir que o scanner seja fechado corretamente
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Digite o código de autenticação multifator (ex: 1234): ");
-            String code = scanner.nextLine();
-            return code.equals("1234"); // Simulação de MFA
+    @Override
+    public String getPassword(String id) {
+        if (!authenticateMFA()) {
+            System.out.println("MFA authentication failed. Operation cancelled.");
+            return null;
+        }
+        return super.getPassword(id);
+    }
+
+    @Override
+    public LinkedHashMap<String, Passwords> getAllPasswords() {
+        if (!authenticateMFA()) {
+            System.out.println("MFA authentication failed. Operation cancelled.");
+            return new LinkedHashMap<>();
+        }
+        return super.getAllPasswords();
+    }
+
+    @Override
+    public Category getRootCategory() {
+        if (!authenticateMFA()) {
+            System.out.println("MFA authentication failed. Operation cancelled.");
+            return null;
+        }
+        return super.getRootCategory();
+    }
+
+    /**
+     * Generates a random 6-digit code, shows it to the user,
+     * and then verifies the user's input against it.
+     */
+    private boolean authenticateMFA() {
+        try {
+            // Generate a random 6-digit code
+            StringBuilder codeBuilder = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                codeBuilder.append(random.nextInt(10));
+            }
+            lastGeneratedCode = codeBuilder.toString();
+
+            // Display the code to the user
+            System.out.println("=================================================");
+            System.out.println("YOUR SECURITY CODE: " + lastGeneratedCode);
+            System.out.println("Please enter this code to continue...");
+            System.out.println("=================================================");
+
+            // Ask for the code
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter the 6-digit security code: ");
+            String userInput = scanner.nextLine().trim();
+
+            // Verify the code
+            boolean isValid = userInput.equals(lastGeneratedCode);
+            if (!isValid) {
+                System.out.println("Invalid security code!");
+            }
+            return isValid;
+
         } catch (Exception e) {
-            System.out.println("Erro ao ler a entrada: " + e.getMessage());
+            System.out.println("Error during MFA authentication: " + e.getMessage());
             return false;
         }
     }

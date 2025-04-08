@@ -308,4 +308,5 @@ public class Main {
         System.out.println("\n=== Category Hierarchy ===");
         storageAPI.displayCategoryHierarchy();
     }
+
 }
