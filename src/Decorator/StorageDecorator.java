@@ -1,4 +1,3 @@
-
 package Decorator;
 import Composite.Category;
 import Interfaces.Passwords;
@@ -43,6 +42,10 @@ public abstract class StorageDecorator implements StorageStrategy {
 
     public String PasswordCategory(String passwordId) {
         return storageStrategy.PasswordCategory(passwordId);
+    }
+
+    public String savePasswordWithCategory(Passwords password, String categoryPath) {
+        return storageStrategy.savePasswordWithCategory(password, categoryPath);
     }
 
 }

@@ -20,7 +20,7 @@ public class MFAStorageDecorator extends StorageDecorator {
         super(storageStrategy);
     }
 
-    @Override
+    
     public String savePassword(Passwords password) {
         if (!authenticateMFA()) {
             System.out.println("MFA authentication failed. Operation cancelled.");
@@ -29,7 +29,7 @@ public class MFAStorageDecorator extends StorageDecorator {
         return super.savePassword(password);
     }
 
-    @Override
+    
     public String getPassword(String id) {
         if (!authenticateMFA()) {
             System.out.println("MFA authentication failed. Operation cancelled.");
@@ -38,7 +38,7 @@ public class MFAStorageDecorator extends StorageDecorator {
         return super.getPassword(id);
     }
 
-    @Override
+    
     public LinkedHashMap<String, Passwords> getAllPasswords() {
         if (!authenticateMFA()) {
             System.out.println("MFA authentication failed. Operation cancelled.");
@@ -47,13 +47,21 @@ public class MFAStorageDecorator extends StorageDecorator {
         return super.getAllPasswords();
     }
 
-    @Override
+    
     public Category getRootCategory() {
         if (!authenticateMFA()) {
             System.out.println("MFA authentication failed. Operation cancelled.");
             return null;
         }
         return super.getRootCategory();
+    }
+
+    public String savePasswordWithCategory(Passwords password, String categoryPath) {
+        if (!authenticateMFA()) {
+            System.out.println("MFA authentication failed. Operation cancelled.");
+            return null;
+        }
+        return super.savePasswordWithCategory(password, categoryPath);
     }
 
     /**

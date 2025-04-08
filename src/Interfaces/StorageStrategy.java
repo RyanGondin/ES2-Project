@@ -12,4 +12,5 @@ public interface StorageStrategy {
     void saveState();
     void restoreState(LinkedHashMap<String, Passwords> passwords, Category rootCategory);
     String PasswordCategory(String passwordId);
+    String savePasswordWithCategory(Passwords password, String categoryPath);
 }

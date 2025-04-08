@@ -64,14 +64,12 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
             e.printStackTrace(); // Add stack trace for debugging
         }
     }
-    
-    @Override
+
     public String getPassword(String id) {
         Passwords password = passwordCache.get(id);
         return password != null ? password.getPassword() : null;
     }
-    
-    @Override
+
     public String savePassword(Passwords password) {
         String id = UUID.randomUUID().toString();
         passwordCache.put(id, password);
@@ -79,7 +77,6 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
         return id;
     }
     
-    @Override
     public void addPasswordToCategory(String categoryPath, Passwords password) {
         // Split path into components, trimming any trailing slashes
         String trimmedPath = categoryPath.replaceAll("/+$", "");
@@ -403,5 +400,17 @@ private void cleanupCategoryReferencesRecursive(Category category) {
 public String PasswordCategory(String passwordId) {
     // Implement the method by calling the existing getPasswordCategory method
     return getPasswordCategory(passwordId);
+}
+
+public String savePasswordWithCategory(Passwords password, String categoryPath) {
+    // First save the password to get its ID
+    String id = savePassword(password);
+    
+    // If successfully saved, add it to the specified category
+    if (id != null) {
+        addPasswordToCategory(categoryPath, password);
+    }
+    
+    return id;
 }
 }

@@ -81,4 +81,12 @@ public abstract class AbstractStorageStrategy implements StorageStrategy {
         
         return null; // Not found in this branch
     }
+
+    public String savePasswordWithCategory(Passwords password, String categoryPath) {
+        String id = savePassword(password);
+        if (id != null) {
+            addPasswordToCategory(categoryPath, password);
+        }
+        return id;
+    }
 }

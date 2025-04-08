@@ -23,7 +23,6 @@ public class PostgresStorageStrategy extends AbstractStorageStrategy {
         loadFromDatabase();
     }
     
-    @Override
     public String getPassword(String id) {
         // Currently use in-memory cache
         // In the future, fetch from database if not in cache
@@ -31,19 +30,16 @@ public class PostgresStorageStrategy extends AbstractStorageStrategy {
         return password != null ? password.getPassword() : null;
     }
     
-    @Override
     public String savePassword(Passwords password) {
         String id = UUID.randomUUID().toString();
         passwordCache.put(id, password);
         return id;
     }
     
-    @Override
     public void addPasswordToCategory(String categoryPath, Passwords password) {
 
     }
     
-    @Override
     public void saveState() {
 
         System.out.println("PostgreSQL storage: state saving not yet implemented");
@@ -59,4 +55,16 @@ public class PostgresStorageStrategy extends AbstractStorageStrategy {
     // Implement the method by calling the existing getPasswordCategory method
     return getPasswordCategory(passwordId);
 }
+
+    public String savePasswordWithCategory(Passwords password, String categoryPath) {
+        // First save the password to get its ID
+        String id = savePassword(password);
+        
+        // If successfully saved, add it to the specified category
+        if (id != null) {
+            addPasswordToCategory(categoryPath, password);
+        }
+        
+        return id;
+    }
 }

@@ -1,6 +1,8 @@
 import Interfaces.Passwords;
+import Interfaces.StorageStrategy;
 import Strategy.StorageAPI;
 import Strategy.FileStorageStrategy;
+import Decorator.MFAStorageDecorator;
 import Exceptions.UndefinedPasswordException;
 import Factory.FactoryPassword;
 import Interfaces.PasswordType;
@@ -25,6 +27,9 @@ public class Main {
             
             // First create storage API with empty password
             StorageAPI api = new StorageAPI("");
+            
+            // Create MFA-decorated version for sensitive operations
+            MFAStorageDecorator secureApi = new MFAStorageDecorator(api);
             
             // If files exist, we need to prompt for the correct password
             if (filesExist) {
@@ -54,8 +59,7 @@ public class Main {
                 }
             }
             
-            // Continue with the rest of your application
-            showMainMenu(api);
+            showMainMenu(api, secureApi);
             
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -69,7 +73,7 @@ public class Main {
         return scanner.nextLine();
     }
 
-    private static void showMainMenu(StorageAPI storageAPI) {
+    private static void showMainMenu(StorageAPI regularStorage, MFAStorageDecorator secureStorage) {
         // Main menu loop
         while (true) {
             System.out.println("\n=== Password Manager ===");
@@ -89,11 +93,11 @@ public class Main {
             switch (choice) {
                 case 1 -> createPassword(scanner, PasswordType.STRONG);
                 case 2 -> createPassword(scanner, PasswordType.STANDART);
-                case 3 -> storePassword(storageAPI);
-                case 4 -> retrievePassword(scanner, storageAPI);
-                case 5 -> displayAllPasswords(storageAPI);
-                case 6 -> manageCategories(scanner, storageAPI);
-                case 7 -> restorePreviousState(scanner, storageAPI, new MementoOriginator());
+                case 3 -> storePassword(regularStorage, secureStorage); // Pass both storages
+                case 4 -> retrievePassword(scanner, regularStorage); // Regular access is fine
+                case 5 -> displayAllPasswords(regularStorage); // Regular access is fine
+                case 6 -> manageCategories(scanner, regularStorage, secureStorage); // Pass both storages
+                case 7 -> restorePreviousState(scanner, regularStorage, new MementoOriginator());
                 case 8 -> {
                     System.out.println("Exiting Password Manager. Goodbye!");
                     return;
@@ -112,7 +116,7 @@ public class Main {
         }
     }
 
-    private static void storePassword(StorageAPI storageAPI) {
+    private static void storePassword(StorageAPI regularStorage, MFAStorageDecorator secureStorage) {
         System.out.println("Enter the name of the service (e.g., Email, Bank):");
         String name = scanner.nextLine();
         
@@ -173,18 +177,20 @@ public class Main {
         System.out.println("2. No");
         int categoryChoice = getIntInput(1, 2);
         
+        // Use MFA-protected storage for saving passwords
         if (categoryChoice == 1) {
-            // Show category hierarchy to help
-            displayCategoryHierarchy(storageAPI);
+            // Use secureStorage for category operations
+            displayCategoryHierarchy(regularStorage);
             System.out.println("Enter category path (e.g., Work/Email):");
             String categoryPath = scanner.nextLine();
             
-            String passwordId = storageAPI.savePasswordWithCategory(pwd, categoryPath);
-            System.out.println("Password stored successfully! ID: " + passwordId);
+            // Cast secureStorage to use the specific method
+            String passwordId = secureStorage.savePasswordWithCategory(pwd, categoryPath);
+            System.out.println("Password stored successfully with MFA protection! ID: " + passwordId);
         } else {
-            // Store without category assignment
-            String passwordId = storageAPI.savePassword(pwd);
-            System.out.println("Password stored without category! ID: " + passwordId);
+            // Store without category assignment but with MFA
+            String passwordId = secureStorage.savePassword(pwd);
+            System.out.println("Password stored without category with MFA protection! ID: " + passwordId);
         }
     }
 
@@ -222,7 +228,7 @@ public class Main {
         }
     }
 
-    private static void manageCategories(Scanner scanner, StorageAPI storageAPI) {
+    private static void manageCategories(Scanner scanner, StorageAPI regularStorage, MFAStorageDecorator secureStorage) {
         while (true) {
             System.out.println("\n=== Category Management ===");
             System.out.println("1. Display Category Hierarchy");
@@ -234,11 +240,11 @@ public class Main {
             scanner.nextLine(); // Consume newline
             
             switch (choice) {
-                case 1 -> storageAPI.displayCategoryHierarchy();
+                case 1 -> regularStorage.displayCategoryHierarchy(); // Reading is fine with regular
                 case 2 -> {
                     System.out.print("Enter category path (e.g., Work/Email): ");
                     String path = scanner.nextLine();
-                    storageAPI.addPasswordToCategory(path, null); // Just create the category
+                    regularStorage.addPasswordToCategory(path, null); // Just create the category
                     System.out.println("Category created!");
                 }
                 case 3 -> {
@@ -247,10 +253,10 @@ public class Main {
                     System.out.print("Enter category path: ");
                     String categoryPath = scanner.nextLine();
                     
-                    Passwords password = storageAPI.getAllPasswords().get(passwordId);
+                    Passwords password = regularStorage.getAllPasswords().get(passwordId);
                     if (password != null) {
-                        storageAPI.addPasswordToCategory(categoryPath, password);
-                        System.out.println("Password added to category!");
+                        secureStorage.addPasswordToCategory(categoryPath, password);
+                        System.out.println("Password added to category with MFA protection!");
                     } else {
                         System.out.println("Password not found!");
                     }
