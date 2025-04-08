@@ -32,42 +32,23 @@ public class Category implements PasswordCategory {
         return this.name;
     }
 
-    @Override
     public void show() {
         show(0);
     }
 
     private void show(int indent) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < indent; i++) {
-            sb.append("  ");
-        }
-        sb.append("- ").append(name);
-        if (!passwordIds.isEmpty()) {
-            sb.append(" (").append(passwordIds.size()).append(" passwords)");
-        }
-        System.out.println(sb.toString());
 
-        for (PasswordCategory child : children) {
-            if (child instanceof Category) {
-                ((Category) child).show(indent + 1);
-            } else {
-                child.show();
-            }
-        }
     }
 
-    @Override
     public void add(PasswordCategory category) {
         children.add(category);
     }
 
-    @Override
+
     public void remove(PasswordCategory category) {
         children.remove(category);
     }
 
-    @Override
     public List<PasswordCategory> getChildren() {
         return children;
     }
@@ -80,13 +61,14 @@ public class Category implements PasswordCategory {
         return passwordIds;
     }
 
+    public boolean containsPasswordId(String id) {
+        return passwordIds.contains(id);
+    }
+
     public void saveToDb() throws IOException, PoolExhaustedException {
         HttpURLConnection connection = dbConnection.acquire(dbUrl);
-        // do nothing
     }
 
     public void someMethodWithConnection() {
-        // If you don't need the connection variable, remove it
-        // Or use it properly
     }
 }

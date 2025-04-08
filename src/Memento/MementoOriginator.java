@@ -4,7 +4,6 @@ import Composite.Category;
 import Interfaces.Passwords;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class MementoOriginator {
 

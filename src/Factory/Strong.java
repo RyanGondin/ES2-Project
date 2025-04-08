@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Strong implements Passwords, PasswordCategory {
@@ -35,42 +36,34 @@ public class Strong implements Passwords, PasswordCategory {
         }
     }
 
-    @Override
     public String getPassword() {
         return this.password;
     }
 
-    @Override
     public void setPassword(String password) {
         this.password = password;
     }
 
-    @Override
     public PasswordType getType() {
         return this.type;
     }
 
-    @Override
     public void setUsername(String username) {
         this.username = username;
     }
 
-    @Override
     public String getUsername() {
         return this.username;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
 
-    @Override
     public void show() {
         System.out.println("Name: " + this.name);
         System.out.println("Username: " + this.username);
@@ -84,17 +77,14 @@ public class Strong implements Passwords, PasswordCategory {
         return PasswordGenerator.generatePassword(24, true, true, true);
     }
 
-    @Override
     public void add(PasswordCategory category) {
         throw new UnsupportedOperationException("Cannot add a category to a password.");
     }
 
-    @Override
     public void remove(PasswordCategory category) {
         throw new UnsupportedOperationException("Cannot remove a category from a password.");
     }
 
-    @Override
     public List<PasswordCategory> getChildren() {
         return null;
     }
@@ -102,5 +92,17 @@ public class Strong implements Passwords, PasswordCategory {
     public void saveToDb() throws IOException, PoolExhaustedException {
         HttpURLConnection connection = dbConnection.acquire(dbUrl);
         // do nothing
+    }
+
+    public static void displayAllPasswords(LinkedHashMap<String, Passwords> passwords) {
+        System.out.println("\nAll Passwords:");
+        passwords.forEach((id, password) -> {
+            // Add null check before accessing methods
+            if (password != null) {
+                System.out.println("ID: " + id + ", Name: " + password.getName());
+            } else {
+                System.out.println("ID: " + id + ", Name: [NULL PASSWORD OBJECT]");
+            }
+        });
     }
 }

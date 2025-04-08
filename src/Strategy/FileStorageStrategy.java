@@ -3,53 +3,66 @@ package Strategy;
 import Composite.Category;
 import Interfaces.PasswordCategory;
 import Interfaces.Passwords;
+import Interfaces.PasswordType;
+
+import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import Factory.FactoryPassword;
 
 public class FileStorageStrategy extends AbstractStorageStrategy {
-    private final String masterPassword;
     private final String passwordsFilePath;
     private final String categoriesFilePath;
-    private SecretKey secretKey;
+    private Encryptor encryptor;
+    
+    // Add a flag to track if data has been loaded
+    private boolean dataLoaded = false;
     
     public FileStorageStrategy(String masterPassword) throws IOException {
+        this(masterPassword, true);
+    }
+    
+    public FileStorageStrategy(String masterPassword, boolean initializeState) throws IOException {
         super();
-        this.masterPassword = masterPassword;
         this.passwordsFilePath = "passwords.bin";
         this.categoriesFilePath = "categories.bin";
         
         try {
-            initializeEncryption();
-            loadFromFiles();
+            this.encryptor = new Encryptor(masterPassword);
+            
+            // Only load files if master password is valid and we want to initialize
+            if (masterPassword != null && !masterPassword.isEmpty() && initializeState) {
+                loadFromFiles();
+                dataLoaded = true;
+            }
         } catch (Exception e) {
             System.err.println("Error initializing file storage: " + e.getMessage());
-            // Initialize with empty state
             this.passwordCache = new LinkedHashMap<>();
             this.rootCategory = new Category("Root");
-            
-            // Rethrow as IOException if it's a file access issue
-            if (e instanceof IOException) {
-                throw (IOException)e;
-            }
         }
     }
     
-    private void initializeEncryption() throws Exception {
-        // Generate a secret key from master password
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] keyBytes = digest.digest(masterPassword.getBytes(StandardCharsets.UTF_8));
-        this.secretKey = new SecretKeySpec(keyBytes, 0, 16, "AES");
+    // Add method to explicitly load data after master password is set
+    public void loadDataWithMasterPassword(String masterPassword) {
+        if (dataLoaded) return; // Don't reload if already loaded
+        
+        try {
+            this.encryptor = new Encryptor(masterPassword);
+            System.out.println("Attempting to load data with provided master password...");
+            loadFromFiles();
+            dataLoaded = true;
+            System.out.println("Data loaded successfully.");
+        } catch (Exception e) {
+            System.err.println("Error loading with master password: " + e.getMessage());
+            e.printStackTrace(); // Add stack trace for debugging
+        }
     }
     
     @Override
@@ -68,13 +81,14 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
     
     @Override
     public void addPasswordToCategory(String categoryPath, Passwords password) {
-        // Implement category path handling
-        String[] pathComponents = categoryPath.split("/");
-        Category current = (Category) rootCategory; // Cast to Category since rootCategory is of type Category
+        // Split path into components, trimming any trailing slashes
+        String trimmedPath = categoryPath.replaceAll("/+$", "");
+        String[] pathComponents = trimmedPath.split("/");
         
-        // Navigate/create category path
+        Category current = rootCategory;
         for (String component : pathComponents) {
-            if (component.isEmpty()) continue;
+            // Skip empty path components
+            if (component.trim().isEmpty()) continue;
             
             Category found = null;
             for (PasswordCategory child : current.getChildren()) {
@@ -92,9 +106,21 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
             current = found;
         }
         
-        // Add password to final category
-        String id = savePassword(password);
-        current.addPasswordId(id);
+        // Add password to final category if provided
+        if (password != null) {
+            // Check if this password is already in the cache
+            String existingId = null;
+            for (Map.Entry<String, Passwords> entry : passwordCache.entrySet()) {
+                if (entry.getValue() == password) {
+                    existingId = entry.getKey();
+                    break;
+                }
+            }
+            
+            // If not found, save it
+            String id = existingId != null ? existingId : savePassword(password);
+            current.addPasswordId(id);
+        }
         
         saveState();
     }
@@ -102,42 +128,77 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
     @Override
     public void saveState() {
         try {
+            // Don't save empty password cache if we had loaded passwords before
+            if (dataLoaded && passwordCache.isEmpty()) {
+                System.out.println("Warning: Preventing save of empty password cache that would overwrite existing data.");
+                return;
+            }
+            cleanupNullPasswords();
+            cleanupCategoryReferences();
+            
             // Save passwords
             String serializedPasswords = serializePasswords();
-            String encryptedPasswords = encrypt(serializedPasswords);
+            String encryptedPasswords = encryptor.encrypt(serializedPasswords);
             writeToFile(passwordsFilePath, encryptedPasswords);
             
             // Save categories
             String serializedCategories = serializeCategories();
-            String encryptedCategories = encrypt(serializedCategories);
+            String encryptedCategories = encryptor.encrypt(serializedCategories);
             writeToFile(categoriesFilePath, encryptedCategories);
+            
+            System.out.println("State saved successfully.");
             
         } catch (Exception e) {
             System.err.println("Error saving state: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
     private void loadFromFiles() {
         try {
-            // Load passwords
+            // Load passwords 
             if (fileExists(passwordsFilePath)) {
-                String encryptedPasswords = readFromFile(passwordsFilePath);
-                String decryptedPasswords = decrypt(encryptedPasswords);
-                deserializePasswords(decryptedPasswords);
+                try {
+                    String encryptedContent = readFromFile(passwordsFilePath);
+                    String serializedPasswords = encryptor.decrypt(encryptedContent);
+                    deserializePasswords(serializedPasswords);
+                    System.out.println("Successfully loaded " + passwordCache.size() + " passwords.");
+                } catch (Exception e) {
+                    // Combined catch block 
+                    if (e instanceof javax.crypto.BadPaddingException) {
+                        System.err.println("Decryption error - incorrect master password or corrupted file: " + e.getMessage());
+                    } else {
+                        System.err.println("Error loading passwords: " + e.getMessage());
+                    }
+                    throw e; // Rethrow so the parent method knows there was an error
+                }
             }
+            
             
             // Load categories
             if (fileExists(categoriesFilePath)) {
-                String encryptedCategories = readFromFile(categoriesFilePath);
-                String decryptedCategories = decrypt(encryptedCategories);
-                deserializeCategories(decryptedCategories);
+                try {
+                    String encryptedContent = readFromFile(categoriesFilePath);
+                    String serializedCategories = encryptor.decrypt(encryptedContent);
+                    deserializeCategories(serializedCategories);
+                    System.out.println("Successfully loaded category structure.");
+                } catch (Exception e) {
+                    // Combined catch block 
+                    if (e instanceof javax.crypto.BadPaddingException) {
+                        System.err.println("Decryption error - incorrect master password or corrupted file: " + e.getMessage());
+                    } else {
+                        System.err.println("Error loading categories: " + e.getMessage());
+                    }
+                    throw e; // Rethrow so the parent method knows there was an error
+                }
             }
             
+            // Clean up any null password entries
+            cleanupNullPasswords();
+            
         } catch (Exception e) {
-            System.err.println("Error loading state: " + e.getMessage());
-            // Initialize with empty state
-            this.passwordCache = new LinkedHashMap<>();
-            this.rootCategory = new Category("Root");
+            System.err.println("Error loading state from files: " + e.getMessage());
+            throw new RuntimeException("Failed to load encrypted data", e);
         }
     }
     
@@ -163,60 +224,72 @@ public class FileStorageStrategy extends AbstractStorageStrategy {
         return new File(filePath).exists();
     }
     
-    // Encryption/decryption
-    private String encrypt(String data) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        byte[] encryptedBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-    
-    private String decrypt(String encryptedData) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
-        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-        return new String(decryptedBytes, StandardCharsets.UTF_8);
-    }
-    
     // Serialization methods
     private String serializePasswords() {
         StringBuilder sb = new StringBuilder();
+        System.out.println("Serializing " + passwordCache.size() + " passwords.");
+        
         for (Map.Entry<String, Passwords> entry : passwordCache.entrySet()) {
+            String id = entry.getKey();
             Passwords pwd = entry.getValue();
-            sb.append(entry.getKey()).append(":")
-              .append(pwd.getName()).append(":")
-              .append(pwd.getUsername()).append(":")
-              .append(pwd.getPassword()).append(":")
+            
+            if (pwd == null) {
+                System.err.println("Warning: Null password found with ID: " + id);
+                continue;
+            }
+            
+            // Now safe to call methods on pwd
+            sb.append(id).append(":")
+              .append(pwd.getName() != null ? pwd.getName() : "").append(":")
+              .append(pwd.getUsername() != null ? pwd.getUsername() : "").append(":")
+              .append(pwd.getPassword() != null ? pwd.getPassword() : "").append(":")
               .append(pwd.getType()).append("\n");
         }
         return sb.toString();
     }
-    
+
     private void deserializePasswords(String serialized) {
+        if (serialized == null || serialized.trim().isEmpty()) {
+            System.out.println("No password data to deserialize.");
+            return;
+        }
+        
+        passwordCache.clear();
         String[] lines = serialized.split("\n");
+        System.out.println("Deserializing " + lines.length + " password entries.");
+        
         for (String line : lines) {
             if (line.trim().isEmpty()) continue;
             
-            String[] parts = line.split(":");
-            if (parts.length == 5) {
-                String id = parts[0];
-                String name = parts[1];
-                String username = parts[2];
-                String passwordValue = parts[3];
-                Interfaces.PasswordType type = Interfaces.PasswordType.valueOf(parts[4]);
+            String[] parts = line.split(":", 5); // Limit to 5 parts
+            if (parts.length < 5) {
+                System.err.println("Invalid password entry: " + line);
+                continue;
+            }
+            
+            String id = parts[0];
+            String name = parts[1];
+            String username = parts[2];
+            String password = parts[3];
+            String type = parts[4];
+            
+            try {
+                // Convert string type to PasswordType enum
+                PasswordType passwordType = PasswordType.valueOf(type);
+                Passwords pwd = FactoryPassword.makePassword(passwordType);
+                pwd.setName(name);
+                pwd.setUsername(username);
+                pwd.setPassword(password);
                 
-                try {
-                    Passwords password = Factory.FactoryPassword.makePassword(type);
-                    password.setName(name);
-                    password.setUsername(username);
-                    password.setPassword(passwordValue);
-                    passwordCache.put(id, password);
-                } catch (Exceptions.UndefinedPasswordException e) {
-                    System.err.println("Error deserializing password: " + e.getMessage());
-                }
+                passwordCache.put(id, pwd);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid password type: " + type);
+            } catch (Exceptions.UndefinedPasswordException e) {
+                System.err.println("Error creating password of type " + type + ": " + e.getMessage());
             }
         }
+        
+        System.out.println("Loaded " + passwordCache.size() + " passwords.");
     }
     
     private String serializeCategories() {
@@ -300,5 +373,35 @@ private void deserializeCategories(String serialized) {
             }
         }
     }
+}
+
+public void cleanupCategoryReferences() {
+    // Recursively clean up all categories to remove null password references
+    cleanupCategoryReferencesRecursive(rootCategory);
+}
+
+private void cleanupCategoryReferencesRecursive(Category category) {
+    // Get all password IDs
+    List<String> passwordIds = new ArrayList<>(category.getPasswordIds());
+    
+    // Check each ID and remove if the password doesn't exist
+    for (String id : passwordIds) {
+        if (!passwordCache.containsKey(id) || passwordCache.get(id) == null) {
+            category.getPasswordIds().remove(id);
+            System.out.println("Removed reference to non-existent password ID: " + id);
+        }
+    }
+    
+    // Clean up children recursively
+    for (PasswordCategory child : category.getChildren()) {
+        if (child instanceof Category) {
+            cleanupCategoryReferencesRecursive((Category) child);
+        }
+    }
+}
+
+public String PasswordCategory(String passwordId) {
+    // Implement the method by calling the existing getPasswordCategory method
+    return getPasswordCategory(passwordId);
 }
 }

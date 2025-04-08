@@ -1,5 +1,6 @@
 import Interfaces.Passwords;
 import Strategy.StorageAPI;
+import Strategy.FileStorageStrategy;
 import Exceptions.UndefinedPasswordException;
 import Factory.FactoryPassword;
 import Interfaces.PasswordType;
@@ -8,88 +9,97 @@ import Memento.MementoOriginator;
 import java.util.Scanner;
 import java.util.LinkedHashMap;
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Main {
+    private static final Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-
-        // Don't initialize with null - just declare the variable
-        StorageAPI storageAPI;
-
         try {
-            File masterPasswordFile = new File("master_password.bin");
-            // Initialize with empty password but skip loading storage
-            storageAPI = new StorageAPI("", false);  // This would need to throw IOException
+            // Check if password files exist
+            File passwordsFile = new File("passwords.bin");
+            File categoriesFile = new File("categories.bin");
+            boolean filesExist = passwordsFile.exists() && categoriesFile.exists();
             
-            if (!masterPasswordFile.exists()) {
+            // First create storage API with empty password
+            StorageAPI api = new StorageAPI("");
+            
+            // If files exist, we need to prompt for the correct password
+            if (filesExist) {
+                System.out.println("Password manager files found. Please enter your master password:");
+                String masterPassword = readPasswordFromConsole();
+                
+                // Update the master password but don't save yet
+                api.setMasterPassword(masterPassword);
+                
+                // If using the FileStorageStrategy, explicitly load data with password
+                if (api.getStorageStrategy() instanceof FileStorageStrategy) {
+                    ((FileStorageStrategy)api.getStorageStrategy()).loadDataWithMasterPassword(masterPassword);
+                }
+            } else {
+                // New user, prompt to create a master password
                 System.out.println("No master password set. Please set a master password:");
-                System.out.print("Enter a new master password: ");
-                String newMasterPassword = scanner.nextLine();
-                System.out.print("Confirm the master password: ");
-                String confirmPassword = scanner.nextLine();
-
-                if (!newMasterPassword.equals(confirmPassword)) {
-                    System.out.println("Passwords do not match. Exiting...");
+                String newPassword = readPasswordFromConsole();
+                System.out.println("Confirm the master password:");
+                String confirmPassword = readPasswordFromConsole();
+                
+                if (newPassword.equals(confirmPassword)) {
+                    api.setMasterPassword(newPassword);
+                    System.out.println("Master password set successfully!");
+                } else {
+                    System.out.println("Passwords don't match. Exiting.");
                     return;
                 }
-
-                storageAPI.setMasterPassword(newMasterPassword);
-                System.out.println("Master password set successfully!");
             }
+            
+            // Continue with the rest of your application
+            showMainMenu(api);
+            
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            scanner.close();
+        }
+    }
 
-            // Prompt the user to enter the master password to unlock the password manager
-            System.out.print("Enter your master password to unlock the password manager: ");
-            String masterPassword = scanner.nextLine();
+    private static String readPasswordFromConsole() {
+        return scanner.nextLine();
+    }
 
-            if (!storageAPI.verifyMasterPassword(masterPassword)) {
-                System.out.println("Incorrect master password. Exiting...");
-                return;
-            }
+    private static void showMainMenu(StorageAPI storageAPI) {
+        // Main menu loop
+        while (true) {
+            System.out.println("\n=== Password Manager ===");
+            System.out.println("1. Create a Strong Password");
+            System.out.println("2. Create a Standart Password");
+            System.out.println("3. Store a Password");
+            System.out.println("4. Retrieve a Password by ID");
+            System.out.println("5. Display All Stored Passwords");
+            System.out.println("6. Manage Categories");
+            System.out.println("7. Restore Previous State");
+            System.out.println("8. Exit");
+            System.out.print("Choose an option: ");
 
-            System.out.println("Password manager unlocked!");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
 
-            // Now initialize with the actual master password for proper encryption/decryption
-            storageAPI = new StorageAPI(masterPassword);
-
-            // Main menu loop
-            while (true) {
-                System.out.println("\n=== Password Manager ===");
-                System.out.println("1. Create a Strong Password");
-                System.out.println("2. Create a Standard Password");
-                System.out.println("3. Store a Password");
-                System.out.println("4. Retrieve a Password by ID");
-                System.out.println("5. Display All Stored Passwords");
-                System.out.println("6. Manage Categories");
-                System.out.println("7. Restore Previous State");
-                System.out.println("8. Exit");
-                System.out.print("Choose an option: ");
-
-                int choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                switch (choice) {
-                    case 1 -> createPassword(scanner, PasswordType.STRONG);
-                    case 2 -> createPassword(scanner, PasswordType.STANDART);
-                    case 3 -> storePassword(scanner, storageAPI);
-                    case 4 -> retrievePassword(scanner, storageAPI);
-                    case 5 -> displayAllPasswords(storageAPI);
-                    case 6 -> manageCategories(scanner, storageAPI);
-                    case 7 -> restorePreviousState(scanner, storageAPI, new MementoOriginator());
-                    case 8 -> {
-                        System.out.println("Exiting Password Manager. Goodbye!");
-                        scanner.close();
-                        return;
-                    }
-                    default -> System.out.println("Invalid choice. Please try again.");
+            switch (choice) {
+                case 1 -> createPassword(scanner, PasswordType.STRONG);
+                case 2 -> createPassword(scanner, PasswordType.STANDART);
+                case 3 -> storePassword(storageAPI);
+                case 4 -> retrievePassword(scanner, storageAPI);
+                case 5 -> displayAllPasswords(storageAPI);
+                case 6 -> manageCategories(scanner, storageAPI);
+                case 7 -> restorePreviousState(scanner, storageAPI, new MementoOriginator());
+                case 8 -> {
+                    System.out.println("Exiting Password Manager. Goodbye!");
+                    return;
                 }
+                default -> System.out.println("Invalid choice. Please try again.");
             }
-        } catch (IOException e) {
-            System.out.println("Error accessing files: " + e.getMessage());
-            return;  // Exit if we can't access files
         }
     }
 
@@ -102,52 +112,79 @@ public class Main {
         }
     }
 
-    private static void storePassword(Scanner scanner, StorageAPI storageAPI) {
-        System.out.print("Enter the name of the service (e.g., Email, Bank): ");
+    private static void storePassword(StorageAPI storageAPI) {
+        System.out.println("Enter the name of the service (e.g., Email, Bank):");
         String name = scanner.nextLine();
-
-        System.out.print("Enter the username: ");
+        
+        System.out.println("Enter the username:");
         String username = scanner.nextLine();
-
+        
         System.out.println("Do you want to create a password or input one manually?");
         System.out.println("1. Create a password");
         System.out.println("2. Input a password manually");
-        System.out.print("Choose an option: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-
-        String passwordValue = null;
-
-        try {
-            if (choice == 1) {
-                System.out.println("Choose the type of password to create:");
-                System.out.println("1. Strong Password");
-                System.out.println("2. Standard Password");
-                System.out.print("Choose an option: ");
-                int passwordTypeChoice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                PasswordType type = (passwordTypeChoice == 1) ? PasswordType.STRONG : PasswordType.STANDART;
-                Passwords password = FactoryPassword.makePassword(type);
-                passwordValue = password.getPassword();
-                System.out.println("Generated Password: " + passwordValue);
-            } else if (choice == 2) {
-                System.out.print("Enter the password: ");
-                passwordValue = scanner.nextLine();
-            } else {
-                System.out.println("Invalid choice. Returning to the main menu.");
+        
+        int choice = getIntInput(1, 2);
+        String password;
+        Passwords pwd = null;
+        
+        if (choice == 1) {
+            System.out.println("Choose the type of password to create:");
+            System.out.println("1. Strong Password");
+            System.out.println("2. Standart Password");
+            int typeChoice = getIntInput(1, 2);
+            
+            try {
+                if (typeChoice == 1) {
+                    pwd = FactoryPassword.makePassword(PasswordType.STRONG);
+                    pwd.setName(name);
+                    pwd.setUsername(username);
+                    password = pwd.getPassword(); // Get the generated password
+                    System.out.println("Generated Password: " + password);
+                } else {
+                    pwd = FactoryPassword.makePassword(PasswordType.STANDART);
+                    pwd.setName(name);
+                    pwd.setUsername(username);
+                    password = pwd.getPassword(); // Get the generated password
+                    System.out.println("Generated Password: " + password);
+                }
+            } catch (Exception e) {
+                System.out.println("Error creating password: " + e.getMessage());
                 return;
             }
-
-            Passwords password = FactoryPassword.makePassword(PasswordType.STRONG); // Default to strong
-            password.setName(name);
-            password.setUsername(username);
-            password.setPassword(passwordValue);
-
-            String id = storageAPI.savePassword(password);
-            System.out.println("Password stored successfully! ID: " + id);
-        } catch (UndefinedPasswordException e) {
-            System.out.println("Error storing password: " + e.getMessage());
+        } else {
+            System.out.println("Enter the password:");
+            password = scanner.nextLine();
+            
+            // For manual entry, create a Standart password
+            try {
+                pwd = FactoryPassword.makePassword(PasswordType.STANDART);
+                pwd.setName(name);
+                pwd.setUsername(username);
+                pwd.setPassword(password);
+            } catch (Exception e) {
+                System.out.println("Error creating password: " + e.getMessage());
+                return;
+            }
+        }
+        
+        // Ask if they want to add to a category
+        System.out.println("Do you want to add this password to a category?");
+        System.out.println("1. Yes");
+        System.out.println("2. No");
+        int categoryChoice = getIntInput(1, 2);
+        
+        if (categoryChoice == 1) {
+            // Show category hierarchy to help
+            displayCategoryHierarchy(storageAPI);
+            System.out.println("Enter category path (e.g., Work/Email):");
+            String categoryPath = scanner.nextLine();
+            
+            String passwordId = storageAPI.savePasswordWithCategory(pwd, categoryPath);
+            System.out.println("Password stored successfully! ID: " + passwordId);
+        } else {
+            // Store without category assignment
+            String passwordId = storageAPI.savePassword(pwd);
+            System.out.println("Password stored without category! ID: " + passwordId);
         }
     }
 
@@ -248,5 +285,27 @@ public class Main {
         } else if (choice != 0) {
             System.out.println("Invalid selection.");
         }
+    }
+
+    private static int getIntInput(int min, int max) {
+        int input;
+        while (true) {
+            try {
+                String line = scanner.nextLine();
+                input = Integer.parseInt(line);
+                if (input >= min && input <= max) {
+                    return input;
+                } else {
+                    System.out.println("Please enter a number between " + min + " and " + max);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number");
+            }
+        }
+    }
+
+    private static void displayCategoryHierarchy(StorageAPI storageAPI) {
+        System.out.println("\n=== Category Hierarchy ===");
+        storageAPI.displayCategoryHierarchy();
     }
 }

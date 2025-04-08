@@ -53,4 +53,10 @@ public class PostgresStorageStrategy extends AbstractStorageStrategy {
 
         System.out.println("PostgreSQL storage: loading not yet implemented");
     }
+
+
+    public String PasswordCategory(String passwordId) {
+    // Implement the method by calling the existing getPasswordCategory method
+    return getPasswordCategory(passwordId);
+}
 }

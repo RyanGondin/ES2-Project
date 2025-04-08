@@ -31,17 +31,14 @@ public class PasswordManagerMemento implements Serializable {
         this.timestamp = LocalDateTime.now();
     }
     
-    @Override
     public LinkedHashMap<String, Passwords> getSavedPasswords() {
         return new LinkedHashMap<>(passwordsState);
     }
-    
-    @Override
+        
     public Category getSavedRootCategory() {
         return deepCopyCategory(rootCategoryState);
     }
     
-    @Override
     public String getLastAccessedPasswordId() {
         return lastAccessedPasswordId;
     }

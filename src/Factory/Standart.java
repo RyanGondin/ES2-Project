@@ -35,22 +35,18 @@ public class Standart implements Passwords, PasswordCategory {
         }
     }
 
-    @Override
     public String getPassword() {
         return this.password;
     }
 
-    @Override
     public void setPassword(String password) {
         this.password = password;
     }
 
-    @Override
     public PasswordType getType() {
         return this.type;
     }
 
-    @Override
     public void show() {
         System.out.println("Name: " + this.name);
         System.out.println("Username: " + this.username);
@@ -58,37 +54,30 @@ public class Standart implements Passwords, PasswordCategory {
         System.out.println("Type: Standard (Medium Security)");
     }
 
-    @Override
     public void add(PasswordCategory category) {
         throw new UnsupportedOperationException("Cannot add a category to a password.");
     }
 
-    @Override
     public void remove(PasswordCategory category) {
         throw new UnsupportedOperationException("Cannot remove a category from a password.");
     }
 
-    @Override
     public List<PasswordCategory> getChildren() {
         return null;
     }
 
-    @Override
     public String getName() {
         return this.name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
     public String getUsername() {
         return this.username;
     }
 
-    @Override
     public void setUsername(String username) {
         this.username = username;
     }
