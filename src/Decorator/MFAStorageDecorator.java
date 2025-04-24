@@ -9,10 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.function.Supplier;
 
-/**
- * A decorator that adds dynamic Multi-Factor Authentication capability
- * by generating a random 6-digit code for user verification.
- */
 public class MFAStorageDecorator extends StorageDecorator {
     private final Random random = new Random();
     private final UserIO userIO;
@@ -52,7 +48,12 @@ public class MFAStorageDecorator extends StorageDecorator {
 
     @Override
     public String savePasswordWithCategory(Passwords password, String categoryPath) {
-        return performWithMFA(() -> super.savePasswordWithCategory(password, categoryPath));
+        return performWithMFA(() -> savePasswordWithCategory(password, categoryPath));
+    }
+
+    @Override
+    public String PasswordCategory(String passwordId) {
+        return performWithMFA(() -> super.PasswordCategory(passwordId));
     }
 
     private boolean authenticateMFA() {

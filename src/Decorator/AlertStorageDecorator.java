@@ -1,30 +1,33 @@
 package Decorator;
 
-
 import Interfaces.Passwords;
 import Interfaces.StorageStrategy;
-import Strategy.StorageAPI;
-
-import java.util.LinkedHashMap;
 
 public class AlertStorageDecorator extends StorageDecorator {
     public AlertStorageDecorator(StorageStrategy storageStrategy) {
         super(storageStrategy);
     }
 
+    @Override
     public String savePassword(Passwords password) {
         String id = super.savePassword(password);
-        sendAlert("Password armazenada com sucesso! ID: " + id);
+        sendAlert("Password stored successfully! ID: " + id);
         return id;
     }
 
+    @Override
     public String savePasswordWithCategory(Passwords password, String categoryPath) {
-        String id = super.savePasswordWithCategory(password, categoryPath);
-        sendAlert("Password armazenada com sucesso na categoria " + categoryPath + "! ID: " + id);
+        String id = savePasswordWithCategory(password, categoryPath);
+        sendAlert("Password stored successfully in category " + categoryPath + "! ID: " + id);
         return id;
     }
 
-    private void sendAlert(String mensagem) {
-        System.out.println("[ALERTA]: " + mensagem);
+    @Override
+    public String PasswordCategory(String passwordId) {
+        return super.PasswordCategory(passwordId);
+    }
+
+    private void sendAlert(String message) {
+        System.out.println("[ALERT]: " + message);
     }
 }

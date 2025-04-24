@@ -83,13 +83,13 @@ public class Main {
      * @return The decorated storage strategy.
      */
     private static StorageStrategy composeDecorators(StorageAPI baseStorage, UserIO userIO) {
-        // Start with the base storage
+    // Start with the base storage
         StorageStrategy storage = baseStorage;
 
         // Add MFA decorator
         storage = new MFAStorageDecorator(storage, userIO);
 
-        // Add Alert decorator (optional, can be based on runtime conditions)
+        // Add Alert decorator
         storage = new AlertStorageDecorator(storage);
 
         return storage;
