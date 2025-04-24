@@ -4,6 +4,8 @@ import Composite.Category;
 import Interfaces.Passwords;
 
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.time.LocalDateTime;
 
 public class MementoOriginator {
 
@@ -17,33 +19,39 @@ public class MementoOriginator {
         this.rootCategory = new Category("root");
     }
 
+    // Save the current state to a memento
+    public void saveState() {
+        PasswordManagerMemento memento = createMemento();
+        caretaker.addMemento(memento);
+    }
+
     // Restore state from a memento
     public void restoreFromMemento(PasswordManagerMemento memento) {
         if (memento != null) {
-            restoreState(
-                    memento.getSavedPasswords(),
-                    memento.getSavedRootCategory()
-            );
+            this.passwords = new LinkedHashMap<>(memento.getSavedPasswords());
+            this.rootCategory = memento.getSavedRootCategory();
             this.lastAccessedPasswordId = memento.getLastAccessedPasswordId();
         }
     }
 
-    private PasswordManagerMemento saveState() {
-        PasswordManagerMemento memento = createMemento();
-        caretaker.addMemento(memento);
-        return memento;
-    }
-
-    private void restoreState(LinkedHashMap<String, Passwords> savedPasswords, Category savedRootCategory) {
-        this.passwords = new LinkedHashMap<>(savedPasswords);
-        this.rootCategory = savedRootCategory;
-    }
-
+    // Create a memento from the current state
     private PasswordManagerMemento createMemento() {
         return new PasswordManagerMemento(
                 this.passwords,
                 this.rootCategory,
                 this.lastAccessedPasswordId
         );
+    }
+
+    public PasswordManagerCaretaker getCaretaker() {
+        return caretaker;
+    }
+
+    public List<LocalDateTime> getMementoTimestamps() {
+        return caretaker.getMementoTimestamps();
+    }
+
+    public PasswordManagerMemento getMemento(int index) {
+        return caretaker.getMemento(index);
     }
 }

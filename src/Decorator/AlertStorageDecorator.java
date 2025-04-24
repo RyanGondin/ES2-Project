@@ -12,9 +12,15 @@ public class AlertStorageDecorator extends StorageDecorator {
         super(storageStrategy);
     }
 
-    public String savePasswword(Passwords password) {
+    public String savePassword(Passwords password) {
         String id = super.savePassword(password);
         sendAlert("Password armazenada com sucesso! ID: " + id);
+        return id;
+    }
+
+    public String savePasswordWithCategory(Passwords password, String categoryPath) {
+        String id = super.savePasswordWithCategory(password, categoryPath);
+        sendAlert("Password armazenada com sucesso na categoria " + categoryPath + "! ID: " + id);
         return id;
     }
 
