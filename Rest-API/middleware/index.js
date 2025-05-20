@@ -1,13 +1,25 @@
 import jwt from 'jsonwebtoken';
 
 // Simulação de donos de app (use DB real na prática)
-const getResourceOwner = (appid) => {
-  const fakeDB = {
-    'app123': 'user1',
-    'app456': 'user2',
-  };
-  return fakeDB[appid] || null;
+export const fakeDB = {
+  'app1': {
+    owner: 'Martim',
+    editors: ['Henrique'],
+    viewers: ['Rodrigo']
+  },
+  'app2': {
+    owner: 'Henrique',
+    editors: [],
+    viewers: ['Martim']
+  },
+  'app3': {
+    owner: 'Rodrigo',
+    editors: ['Henrique'],
+    viewers: ['']
+  }
 };
+
+const getResourceRelations = (appid) => fakeDB[appid] || null;
 
 // Logging simples
 export const requestLogger = (req, res, next) => {
@@ -34,14 +46,24 @@ export const authenticate = (req, res, next) => {
 // Autorização baseada em relações (ReBAC)
 export const authorize = (action) => {
   return (req, res, next) => {
-    const owner = getResourceOwner(req.params.appid);
-    if (!owner) {
-      console.log(`App ${req.params.appid} not found`);
+    const relations = getResourceRelations(req.params.appid);
+    if (!relations) {
       return res.status(404).json({ error: 'Application not found' });
     }
+    const userId = req.user.id;
 
-    if (req.user.id !== owner) {
-      console.log(`Access denied for user ${req.user.id} to ${req.params.appid}`);
+    let rel = null;
+    if (relations.owner === userId) rel = 'owner';
+    else if (relations.editors?.includes(userId)) rel = 'editor';
+    else if (relations.viewers?.includes(userId)) rel = 'viewer';
+
+    const permissions = {
+      owner: ['read', 'update', 'create'],
+      editor: ['read', 'update'],
+      viewer: ['read']
+    };
+
+    if (!rel || !permissions[rel].includes(action)) {
       return res.status(403).json({ error: 'Forbidden: insufficient privileges' });
     }
 
