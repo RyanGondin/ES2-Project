@@ -143,6 +143,8 @@ router.post('/app', authenticate, (req, res) => {
  *                     type: string
  *                   owner:
  *                     type: string
+ *                   role:
+ *                     type: string
  */
 router.get('/apps', authenticate, (req, res) => {
   const userId = req.user.id;
@@ -181,11 +183,29 @@ router.get('/apps', authenticate, (req, res) => {
  *         schema:
  *           type: string
  *         description: App ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Password created
  */
 router.post('/password/:appid', authenticate, authorize('create'), (req, res) => {
+  const { password } = req.body;
+  const app = fakeDB[req.params.appid];
+  if (!app) {
+    return res.status(404).json({ error: 'App not found' });
+  }
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+  app.password = password;
   console.log(`Password criada para ${req.params.appid} por ${req.user.id}`);
   res.status(201).json({ message: 'Password criada com sucesso' });
 });
@@ -205,11 +225,29 @@ router.post('/password/:appid', authenticate, authorize('create'), (req, res) =>
  *         schema:
  *           type: string
  *         description: App ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Password updated
  */
 router.put('/password/:appid', authenticate, authorize('update'), (req, res) => {
+  const { password } = req.body;
+  const app = fakeDB[req.params.appid];
+  if (!app) {
+    return res.status(404).json({ error: 'App not found' });
+  }
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+  app.password = password;
   console.log(`Password atualizada para ${req.params.appid} por ${req.user.id}`);
   res.json({ message: 'Password atualizada com sucesso' });
 });
@@ -241,8 +279,12 @@ router.put('/password/:appid', authenticate, authorize('update'), (req, res) => 
  *                   type: string
  */
 router.get('/password/:appid', authenticate, authorize('read'), (req, res) => {
+  const app = fakeDB[req.params.appid];
+  if (!app || !app.password) {
+    return res.status(404).json({ error: 'Password not found' });
+  }
   console.log(`Password lida para ${req.params.appid} por ${req.user.id}`);
-  res.json({ password: 'example-password' });
+  res.json({ password: app.password });
 });
 
 export default router;

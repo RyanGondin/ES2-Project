@@ -5,17 +5,20 @@ export const fakeDB = {
   'app1': {
     owner: 'Martim',
     editors: ['Henrique'],
-    viewers: ['Rodrigo']
+    viewers: ['Rodrigo'],
+    password: ['Qwerty']  
   },
   'app2': {
     owner: 'Henrique',
     editors: [],
-    viewers: ['Martim']
+    viewers: ['Martim'],
+    password: ['Qwerty']
   },
   'app3': {
     owner: 'Rodrigo',
     editors: ['Henrique'],
-    viewers: ['']
+    viewers: [''],
+    password: ['Qwerty']
   }
 };
 
@@ -26,7 +29,6 @@ export const requestLogger = (req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} by ${req.user?.id || 'unauthenticated'}`);
   next();
 };
-
 // Autenticação JWT
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
