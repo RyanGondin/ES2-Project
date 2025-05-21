@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" version="27.0.6">
+  <diagram name="Page-1" id="YYb1JHpEI7KQrXGryJun">
+    <mxGraphModel dx="1665" dy="-460" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lsB59EZdnWk9wFee6cty-1" value="&#xa;&#xa;Endpoints:&#xa;POST   /api/login          - User authentication&#xa;POST   /api/app           - Create new app&#xa;GET    /api/apps          - List user&#39;s apps&#xa;POST   /api/password/:id  - Create password&#xa;PUT    /api/password/:id  - Update password&#xa;GET    /api/password/:id  - Read password&#xa;&#xa;&#xa;Access Levels:&#xa;- owner:  read, update, create&#xa;- editor: read, update&#xa;- viewer: read" style="text;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="740" y="1500" width="270" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-2" value="cliente" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1100" y="1370" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="lsB59EZdnWk9wFee6cty-3" target="lsB59EZdnWk9wFee6cty-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-3" value="Express App" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1100" y="1530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-4" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="lsB59EZdnWk9wFee6cty-2" target="lsB59EZdnWk9wFee6cty-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1090" y="1600" as="sourcePoint" />
+            <mxPoint x="1140" y="1550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-6" value="Swagger UI" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1290" y="1530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-8" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="lsB59EZdnWk9wFee6cty-3" target="lsB59EZdnWk9wFee6cty-9" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1110" y="1600" as="sourcePoint" />
+            <mxPoint x="1090" y="1670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-9" value="Routes" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="1640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="lsB59EZdnWk9wFee6cty-10" target="lsB59EZdnWk9wFee6cty-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-10" value="Middleware" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1181" y="1640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-11" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="lsB59EZdnWk9wFee6cty-3" target="lsB59EZdnWk9wFee6cty-10" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1110" y="1600" as="sourcePoint" />
+            <mxPoint x="1160" y="1550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-12" value="&lt;span style=&quot;text-align: left;&quot;&gt;&amp;nbsp;Authenticate&amp;nbsp; &amp;nbsp;&lt;/span&gt;&lt;br style=&quot;padding: 0px; margin: 0px; text-align: left;&quot;&gt;&lt;span style=&quot;text-align: left;&quot;&gt;&amp;nbsp; Authorize&amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;/span&gt;&lt;span style=&quot;text-align: left;&quot;&gt;&amp;nbsp; &lt;/span&gt;&lt;span style=&quot;text-align: left;&quot;&gt;&amp;nbsp;ErrorHandler&amp;nbsp;&amp;nbsp;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1181" y="1740" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-14" value="FakeDataBase&lt;div&gt;In-memory data&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1090" y="1840" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-15" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="lsB59EZdnWk9wFee6cty-9" target="lsB59EZdnWk9wFee6cty-14" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1110" y="1800" as="sourcePoint" />
+            <mxPoint x="1160" y="1750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lsB59EZdnWk9wFee6cty-16" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="lsB59EZdnWk9wFee6cty-12" target="lsB59EZdnWk9wFee6cty-14" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1110" y="1800" as="sourcePoint" />
+            <mxPoint x="1160" y="1750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
