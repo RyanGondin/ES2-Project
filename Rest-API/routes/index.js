@@ -48,6 +48,25 @@ const users = [
  *               properties:
  *                 token:
  *                   type: string
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid credentials"
+ *       400:
+ *         description: Bad request - missing username or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
  */
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -104,6 +123,45 @@ router.post('/login', (req, res) => {
  *     responses:
  *       201:
  *         description: App created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 appid:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 owner:
+ *                   type: string
+ *                 editors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 viewers:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Bad request - app name and owner are required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "App name and owner are required"
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing Authorization Header"
  */
 router.post('/app', authenticate, (req, res) => {
   const { name, owner, editors, viewers } = req.body;
@@ -145,6 +203,17 @@ router.post('/app', authenticate, (req, res) => {
  *                     type: string
  *                   role:
  *                     type: string
+ *                     enum: [owner, editor, viewer]
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing Authorization Header"
  */
 router.get('/apps', authenticate, (req, res) => {
   const userId = req.user.id;
@@ -195,6 +264,54 @@ router.get('/apps', authenticate, (req, res) => {
  *     responses:
  *       201:
  *         description: Password created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password criada com sucesso"
+ *       400:
+ *         description: Bad request - password is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Password is required"
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing Authorization Header"
+ *       403:
+ *         description: Forbidden - insufficient privileges (not owner)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden: insufficient privileges"
+ *       404:
+ *         description: App not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "App not found"
  */
 router.post('/password/:appid', authenticate, authorize('create'), (req, res) => {
   const { password } = req.body;
@@ -237,6 +354,54 @@ router.post('/password/:appid', authenticate, authorize('create'), (req, res) =>
  *     responses:
  *       200:
  *         description: Password updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password atualizada com sucesso"
+ *       400:
+ *         description: Bad request - password is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Password is required"
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing Authorization Header"
+ *       403:
+ *         description: Forbidden - insufficient privileges (not owner or editor)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden: insufficient privileges"
+ *       404:
+ *         description: App not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "App not found"
  */
 router.put('/password/:appid', authenticate, authorize('update'), (req, res) => {
   const { password } = req.body;
@@ -277,6 +442,36 @@ router.put('/password/:appid', authenticate, authorize('update'), (req, res) => 
  *               properties:
  *                 password:
  *                   type: string
+ *       401:
+ *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing Authorization Header"
+ *       403:
+ *         description: Forbidden - insufficient privileges (not owner, editor, or viewer)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden: insufficient privileges"
+ *       404:
+ *         description: Password not found or app not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Password not found"
  */
 router.get('/password/:appid', authenticate, authorize('read'), (req, res) => {
   const app = fakeDB[req.params.appid];
