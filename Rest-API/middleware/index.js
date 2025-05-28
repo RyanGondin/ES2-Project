@@ -24,11 +24,6 @@ export const fakeDB = {
 
 const getResourceRelations = (appid) => fakeDB[appid] || null;
 
-// Logging simples
-export const requestLogger = (req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} by ${req.user?.id || 'unauthenticated'}`);
-  next();
-};
 // Autenticação JWT
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
