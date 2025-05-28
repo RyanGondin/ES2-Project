@@ -5,6 +5,7 @@ import { fetchExternalApps, mockExternalApiFailure } from '../services/externalA
 
 const router = express.Router();
 
+
 // Simulação de usuários
 const users = [
   { id: 'Martim', username: 'Martim', password: 'qwerty' },
@@ -627,4 +628,7 @@ router.post('/import/apps', authenticate, async (req, res) => {
   }
 });
 
+module.exports = app;
 export default router;
+
+
