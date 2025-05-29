@@ -1,0 +1,36 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ik1hcnRpbSIsInVzZXJuYW1lIjoiTWFydGltIiwicm9sZXMiOlt7ImFwcGlkIjoiYXBwMSIsInJvbGUiOiJvd25lciJ9LHsiYXBwaWQiOiJhcHAyIiwicm9sZSI6InZpZXdlciJ9XSwiaWF0IjoxNzQ4NDcwNDc1LCJleHAiOjE3NDg0NzQwNzV9.Ge56vartl8FzMjs1dNSzZDFZ0dzVLYT1VslbGpUCTCE
+
+
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+  "username": "Martim",
+  "password": "qwerty"
+}
+
+###
+
+GET http://localhost:3000/api/audit/logins
+Authorization: Bearer {{token}}
+
+###
+
+POST http://localhost:3000/api/import/apps
+Authorization: Bearer {{token}}
+
+
+###
+
+POST http://localhost:3000/api/import/apps
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "simulate_failure": true
+}
+
+###
+
+GET http://localhost:3000/api/apps
+Authorization: Bearer {{token}}

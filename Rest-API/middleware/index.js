@@ -24,11 +24,6 @@ export const fakeDB = {
 
 const getResourceRelations = (appid) => fakeDB[appid] || null;
 
-// Logging simples
-export const requestLogger = (req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} by ${req.user?.id || 'unauthenticated'}`);
-  next();
-};
 // Autenticação JWT
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -77,4 +72,9 @@ export const authorize = (action) => {
 export const errorHandler = (err, req, res, next) => {
   console.error('Internal server error:', err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
+};
+
+export const requestLogger = (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} by ${req.user?.id || 'unauthenticated'}`);
+  next();
 };

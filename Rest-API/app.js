@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import routes from './routes/index.js';
-import { errorHandler, requestLogger } from './middleware/index.js';
+import { errorHandler } from './middleware/index.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 
